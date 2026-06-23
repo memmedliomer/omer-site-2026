@@ -1,0 +1,106 @@
+@import "tailwindcss";
+@variant dark (&:where(.dark, .dark *));
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes liquid-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+/* Maye LED Çərçivə Animasiyası */
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes border-spin {
+  from { --angle: 0deg; }
+  to { --angle: 360deg; }
+}
+
+.liquid-led {
+  position: relative;
+}
+
+.liquid-led::after, .liquid-led::before {
+  content: '';
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-image: conic-gradient(from var(--angle), transparent 70%, var(--led-color), var(--led-color-alt));
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  z-index: -1;
+  padding: 5px; /* Çərçivənin qalınlığı */
+  border-radius: 20px;
+  animation: 3s border-spin linear infinite;
+}
+
+.liquid-led::before {
+  filter: blur(1.5rem); /* Arxa fon parıltısı (glow) */
+  opacity: 0.5;
+}
+
+/* Rəng Təyinatları */
+.led-gold {
+  --led-color: #ffd700;
+  --led-color-alt: #b8860b;
+}
+
+.led-silver {
+  --led-color: #e2e8f0;
+  --led-color-alt: #94a3b8;
+}
+
+.led-bronze {
+  --led-color: #cd7f32;
+  --led-color-alt: #8b4513;
+}
+
+.galaxy-bg {
+  background-image: url('/galaxy.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  opacity: 0; /* Light rejim üçün */
+}
+
+.dark .galaxy-bg {
+  opacity: 1; /* Dark rejim üçün */
+}
