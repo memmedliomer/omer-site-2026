@@ -33,10 +33,10 @@ export default function AdminPanel() {
   const [certCategory, setCertCategory] = useState('none');
   const [uploadingCert, setUploadingCert] = useState(false);
 
-  // Proyekt Formu (YENİLƏNİB - Dinamik Xüsusiyyətlər)
+  // Proyekt Formu
   const [projTitle, setProjTitle] = useState('');
   const [projDesc, setProjDesc] = useState('');
-  const [projFeatures, setProjFeatures] = useState(''); // Artıq tək xanada yazılır
+  const [projFeatures, setProjFeatures] = useState(''); 
   const [projTech, setProjTech] = useState('');
   const [projFile, setProjFile] = useState<File | null>(null);
   const [uploadingProj, setUploadingProj] = useState(false);
@@ -108,7 +108,6 @@ export default function AdminPanel() {
     setUploadingProj(true);
     try {
       const secureImageUrl = await uploadToCloudinary(projFile);
-      // Xüsusiyyətləri speed sütununa göndəririk (backend dəyişikliyinə ehtiyac qalmır)
       await fetch('/api/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: projTitle, description: projDesc, image: secureImageUrl, speed: projFeatures, weight: '', tech_stack: projTech }) });
       setProjTitle(''); setProjDesc(''); setProjFeatures(''); setProjTech(''); setProjFile(null); fetchProjects();
     } catch (err) { alert("Xəta!"); } finally { setUploadingProj(false); }
@@ -156,13 +155,16 @@ export default function AdminPanel() {
     return (
       <main className="min-h-screen bg-[#050b14] flex items-center justify-center p-4 relative z-[200]">
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative z-10 w-full max-w-md bg-black/50 border border-white/10 p-8 rounded-3xl backdrop-blur-xl">
-          <div className="flex flex-col items-center mb-8"><div className="w-16 h-16 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-full flex items-center justify-center mb-4"><Shield size={32} className="text-white" /></div><h1 className="text-2xl font-black text-white uppercase tracking-widest">Admin Panel</h1></div>
-          <form onSubmit={handleLogin} className="flex flex-col gap-5">
-            <div className="relative"><User className="absolute left-4 top-3.5 text-slate-400" size={20} /><input type="text" placeholder="İstifadəçi adı" required value={username} onChange={(e) => setUsername(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-cyan-500" /></div>
-            <div className="relative"><Lock className="absolute left-4 top-3.5 text-slate-400" size={20} /><input type="password" placeholder="Şifrə" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-cyan-500" /></div>
-            {error && <p className="text-red-400 text-sm text-center font-medium">{error}</p>}
-            <button type="submit" disabled={loading} className="w-full py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-bold uppercase transition-all shadow-lg mt-2">Daxil Ol</button>
+        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative z-10 w-full max-w-md bg-black/50 border border-white/10 p-6 sm:p-8 rounded-3xl backdrop-blur-xl">
+          <div className="flex flex-col items-center mb-6 md:mb-8">
+            <div className="w-14 h-14 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-full flex items-center justify-center mb-4"><Shield size={28} className="text-white" /></div>
+            <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-widest">Admin Panel</h1>
+          </div>
+          <form onSubmit={handleLogin} className="flex flex-col gap-4 sm:gap-5">
+            <div className="relative"><User className="absolute left-4 top-3.5 text-slate-400" size={18} /><input type="text" placeholder="İstifadəçi adı" required value={username} onChange={(e) => setUsername(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-cyan-500 text-sm sm:text-base" /></div>
+            <div className="relative"><Lock className="absolute left-4 top-3.5 text-slate-400" size={18} /><input type="password" placeholder="Şifrə" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-cyan-500 text-sm sm:text-base" /></div>
+            {error && <p className="text-red-400 text-xs sm:text-sm text-center font-medium">{error}</p>}
+            <button type="submit" disabled={loading} className="w-full py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-bold uppercase transition-all shadow-lg mt-2 text-sm sm:text-base">Daxil Ol</button>
           </form>
         </motion.div>
       </main>
@@ -170,8 +172,19 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050b14] flex text-white relative z-[200]">
-      <div className="w-64 bg-black/50 border-r border-white/10 backdrop-blur-xl p-6 flex flex-col h-screen sticky top-0 overflow-y-auto">
+    <div className="min-h-screen bg-[#050b14] flex flex-col md:flex-row text-white relative z-[200]">
+      
+      {/* MOBİL ÜÇÜN ÜST BAŞLIQ (Yalnız Telefonda görünür) */}
+      <div className="md:hidden flex items-center justify-between p-4 bg-black/80 border-b border-white/10 backdrop-blur-xl sticky top-0 z-40">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center"><Shield size={16} className="text-black" /></div>
+          <span className="font-black text-lg tracking-wider uppercase">Admin</span>
+        </div>
+        <button onClick={handleLogout} className="p-2 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-colors"><LogOut size={20} /></button>
+      </div>
+
+      {/* KOMPÜTER ÜÇÜN YAN MENYU (Yalnız Desktopda görünür) */}
+      <div className="hidden md:flex w-64 bg-black/50 border-r border-white/10 backdrop-blur-xl p-6 flex-col h-screen sticky top-0 overflow-y-auto z-40">
         <div className="flex items-center gap-3 mb-10"><div className="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center"><Shield size={20} className="text-black" /></div><span className="font-black text-xl tracking-wider uppercase">Admin</span></div>
         <nav className="flex flex-col gap-2 flex-1">
           <button onClick={() => setActiveTab('messages')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'messages' ? 'bg-blue-600/20 text-blue-400' : 'hover:bg-white/5 text-slate-400 hover:text-white'}`}><MessageSquare size={20} /> Mesajlar</button>
@@ -183,35 +196,36 @@ export default function AdminPanel() {
         <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors mt-6"><LogOut size={20} /> Çıxış</button>
       </div>
 
-      <div className="flex-1 p-10 overflow-y-auto">
+      {/* ƏSAS MƏZMUN (Məlumatların göründüyü yer) */}
+      <div className="flex-1 p-4 sm:p-6 md:p-10 pb-28 md:pb-10 overflow-y-auto w-full">
         
         {/* MESAJLAR */}
         {activeTab === 'messages' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <h2 className="text-3xl font-black mb-8 border-b border-white/10 pb-4">Gələn Mesajlar</h2>
+            <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b border-white/10 pb-4">Gələn Mesajlar</h2>
             <div className="flex flex-col gap-4">
               {messages.length === 0 ? <p className="text-slate-500 text-center p-8">Mesaj yoxdur.</p> : messages.map((msg) => (
-                <div key={msg.id} className="p-6 bg-white/5 border border-white/10 rounded-2xl shadow-lg group">
-                  <div className="flex justify-between items-center border-b border-white/5 pb-3 mb-3">
-                    <h3 className="text-cyan-400 font-bold text-lg flex items-center gap-2"><User size={18}/> {msg.name}</h3>
-                    <div className="flex items-center gap-4">
-                      <span className="text-slate-300 font-mono text-sm bg-black/50 px-3 py-1 rounded-full">{msg.phone}</span>
-                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <button onClick={() => { setEditingId(msg.id); setEditContent(msg.message); }} className="p-2 bg-blue-500/20 text-blue-400 hover:bg-blue-500 hover:text-white rounded-lg transition-colors"><Edit2 size={16} /></button>
-                         <button onClick={() => handleDeleteMessage(msg.id)} className="p-2 bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-colors"><Trash2 size={16} /></button>
+                <div key={msg.id} className="p-4 sm:p-6 bg-white/5 border border-white/10 rounded-2xl shadow-lg group">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/5 pb-3 mb-3 gap-3 sm:gap-0">
+                    <h3 className="text-cyan-400 font-bold text-base sm:text-lg flex items-center gap-2"><User size={18}/> {msg.name}</h3>
+                    <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                      <span className="text-slate-300 font-mono text-xs sm:text-sm bg-black/50 px-2 sm:px-3 py-1 rounded-full">{msg.phone}</span>
+                      <div className="flex items-center gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                         <button onClick={() => { setEditingId(msg.id); setEditContent(msg.message); }} className="p-1.5 sm:p-2 bg-blue-500/20 text-blue-400 hover:bg-blue-500 hover:text-white rounded-lg transition-colors"><Edit2 size={16} /></button>
+                         <button onClick={() => handleDeleteMessage(msg.id)} className="p-1.5 sm:p-2 bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-colors"><Trash2 size={16} /></button>
                       </div>
                     </div>
                   </div>
                   {editingId === msg.id ? (
                     <div className="mt-2">
-                      <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} className="w-full bg-black/40 border border-cyan-500/50 rounded-xl p-4 text-white focus:outline-none resize-none" rows={4} />
+                      <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} className="w-full bg-black/40 border border-cyan-500/50 rounded-xl p-3 sm:p-4 text-white focus:outline-none resize-none text-sm sm:text-base" rows={4} />
                       <div className="flex gap-2 mt-2 justify-end">
-                        <button onClick={() => setEditingId(null)} className="flex items-center gap-1 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-colors"><X size={14}/> Ləğv et</button>
-                        <button onClick={() => handleSaveEdit(msg.id)} className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-500 rounded-lg text-sm transition-colors"><Check size={14}/> Yadda saxla</button>
+                        <button onClick={() => setEditingId(null)} className="flex items-center gap-1 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs sm:text-sm transition-colors"><X size={14}/> Ləğv et</button>
+                        <button onClick={() => handleSaveEdit(msg.id)} className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-500 rounded-lg text-xs sm:text-sm transition-colors"><Check size={14}/> Yadda saxla</button>
                       </div>
                     </div>
-                  ) : ( <p className="text-slate-200 leading-relaxed whitespace-pre-wrap">{msg.message}</p> )}
-                  <span className="text-xs text-slate-500 mt-4 block">Göndərildi: {new Date(msg.created_at).toLocaleString()}</span>
+                  ) : ( <p className="text-slate-200 leading-relaxed whitespace-pre-wrap text-sm sm:text-base">{msg.message}</p> )}
+                  <span className="text-[10px] sm:text-xs text-slate-500 mt-4 block">Göndərildi: {new Date(msg.created_at).toLocaleString()}</span>
                 </div>
               ))}
             </div>
@@ -221,16 +235,16 @@ export default function AdminPanel() {
         {/* QOVLUQLAR */}
         {activeTab === 'folders' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <h2 className="text-3xl font-black mb-8 border-b border-white/10 pb-4">Kataloq İdarəetməsi</h2>
-            <form onSubmit={handleCreateCategory} className="flex gap-4 mb-10">
-              <input type="text" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Yeni Kataloq Adı" className="flex-1 bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-cyan-500" required />
-              <button type="submit" className="px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl flex items-center gap-2"><Plus size={20} /> Yarat</button>
+            <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b border-white/10 pb-4">Kataloq İdarəetməsi</h2>
+            <form onSubmit={handleCreateCategory} className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-8 md:mb-10">
+              <input type="text" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Yeni Kataloq Adı" className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 md:px-5 md:py-4 text-white focus:outline-none focus:border-cyan-500" required />
+              <button type="submit" className="px-6 md:px-8 py-3 md:py-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl flex items-center justify-center gap-2"><Plus size={20} /> Yarat</button>
             </form>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {categories.map((cat, i) => (
-                <div key={i} className="p-6 bg-white/5 border border-white/10 rounded-2xl flex items-center gap-4">
-                  <div className="p-3 bg-cyan-500/20 text-cyan-400 rounded-xl"><Folder size={24} /></div>
-                  <span className="font-bold text-lg">{cat.name}</span>
+                <div key={i} className="p-4 sm:p-6 bg-white/5 border border-white/10 rounded-2xl flex items-center gap-4">
+                  <div className="p-3 bg-cyan-500/20 text-cyan-400 rounded-xl"><Folder size={20} className="sm:w-6 sm:h-6" /></div>
+                  <span className="font-bold text-base sm:text-lg">{cat.name}</span>
                 </div>
               ))}
             </div>
@@ -240,18 +254,18 @@ export default function AdminPanel() {
         {/* SERTİFİKATLAR */}
         {activeTab === 'certificates' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <h2 className="text-3xl font-black mb-8 border-b border-white/10 pb-4">Sertifikat İdarəetməsi</h2>
-            <form onSubmit={handleCreateCertificate} className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex flex-col gap-2">
-                <label className="text-sm text-slate-400">Sertifikatın Adı</label>
+            <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b border-white/10 pb-4">Sertifikat İdarəetməsi</h2>
+            <form onSubmit={handleCreateCertificate} className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 mb-8 md:mb-10 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              <div className="flex flex-col gap-1.5 md:gap-2">
+                <label className="text-xs md:text-sm text-slate-400">Sertifikatın Adı</label>
                 <input type="text" required value={certTitle} onChange={(e) => setCertTitle(e.target.value)} className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-purple-500 outline-none" />
               </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm text-slate-400">Şəkil Seç</label>
-                <input type="file" accept="image/*" required onChange={(e) => setCertFile(e.target.files?.[0] || null)} className="bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-purple-600/30 file:text-purple-400" />
+              <div className="flex flex-col gap-1.5 md:gap-2">
+                <label className="text-xs md:text-sm text-slate-400">Şəkil Seç</label>
+                <input type="file" accept="image/*" required onChange={(e) => setCertFile(e.target.files?.[0] || null)} className="bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs md:file:text-sm file:font-bold file:bg-purple-600/30 file:text-purple-400" />
               </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm text-slate-400">Çərçivə Rəngi</label>
+              <div className="flex flex-col gap-1.5 md:gap-2">
+                <label className="text-xs md:text-sm text-slate-400">Çərçivə Rəngi</label>
                 <select value={certRank} onChange={(e) => setCertRank(e.target.value)} className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none appearance-none">
                   <option value="none">Sadə Çərçivə</option>
                   <option value="gold">Qızıl (Gold)</option>
@@ -259,112 +273,110 @@ export default function AdminPanel() {
                   <option value="bronze">Bürünc (Bronze)</option>
                 </select>
               </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm text-slate-400">Qrup Seçimi</label>
+              <div className="flex flex-col gap-1.5 md:gap-2">
+                <label className="text-xs md:text-sm text-slate-400">Qrup Seçimi</label>
                 <select value={certCategory} onChange={(e) => setCertCategory(e.target.value)} className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none appearance-none">
                   <option value="none">Fərdi Sertifikat</option>
                   {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                 </select>
               </div>
-              <button type="submit" disabled={uploadingCert} className="md:col-span-2 py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50">
+              <button type="submit" disabled={uploadingCert} className="md:col-span-2 py-3 md:py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50">
                 {uploadingCert ? "Yüklənir..." : <><UploadCloud size={20} /> Yüklə və Saxla</>}
               </button>
             </form>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {certificates.map((cert) => (
                 <div key={cert.id} className="bg-black/40 border border-white/10 rounded-xl overflow-hidden group">
                   <div className={`h-40 w-full relative border-b-4 border-${cert.rank === 'gold' ? 'yellow-500' : cert.rank === 'silver' ? 'slate-300' : cert.rank === 'bronze' ? 'orange-600' : 'transparent'}`}>
                     <img src={cert.image} alt={cert.title} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
-                    <button onClick={() => handleDeleteCertificate(cert.id)} className="absolute top-2 right-2 p-2 bg-red-600/80 text-white rounded-lg hover:bg-red-500 opacity-0 group-hover:opacity-100"><Trash2 size={16}/></button>
+                    <button onClick={() => handleDeleteCertificate(cert.id)} className="absolute top-2 right-2 p-2 bg-red-600/80 text-white rounded-lg hover:bg-red-500 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"><Trash2 size={16}/></button>
                   </div>
-                  <div className="p-4"><h3 className="font-bold text-white truncate">{cert.title}</h3></div>
+                  <div className="p-3 md:p-4"><h3 className="font-bold text-sm md:text-base text-white truncate">{cert.title}</h3></div>
                 </div>
               ))}
             </div>
           </motion.div>
         )}
 
-        {/* PROYEKT İDARƏETMƏSİ (Yeniləndi!) */}
+        {/* PROYEKT İDARƏETMƏSİ */}
         {activeTab === 'projects' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <h2 className="text-3xl font-black mb-8 border-b border-white/10 pb-4 text-emerald-400">Proyekt İdarəetməsi</h2>
-            <form onSubmit={handleCreateProject} className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex flex-col gap-2">
-                <label className="text-sm text-slate-400">Proyektin Adı</label>
+            <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b border-white/10 pb-4 text-emerald-400">Proyekt İdarəetməsi</h2>
+            <form onSubmit={handleCreateProject} className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 mb-8 md:mb-10 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              <div className="flex flex-col gap-1.5 md:gap-2">
+                <label className="text-xs md:text-sm text-slate-400">Proyektin Adı</label>
                 <input type="text" required value={projTitle} onChange={(e) => setProjTitle(e.target.value)} className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none" />
               </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm text-slate-400">Şəkil Seç</label>
-                <input type="file" accept="image/*" required onChange={(e) => setProjFile(e.target.files?.[0] || null)} className="bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-emerald-600/30 file:text-emerald-400" />
+              <div className="flex flex-col gap-1.5 md:gap-2">
+                <label className="text-xs md:text-sm text-slate-400">Şəkil Seç</label>
+                <input type="file" accept="image/*" required onChange={(e) => setProjFile(e.target.files?.[0] || null)} className="bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs md:file:text-sm file:font-bold file:bg-emerald-600/30 file:text-emerald-400" />
               </div>
-              <div className="flex flex-col gap-2 md:col-span-2">
-                <label className="text-sm text-slate-400">Qısa Təsvir</label>
+              <div className="flex flex-col gap-1.5 md:gap-2 md:col-span-2">
+                <label className="text-xs md:text-sm text-slate-400">Qısa Təsvir</label>
                 <textarea required value={projDesc} onChange={(e) => setProjDesc(e.target.value)} rows={3} className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none resize-none" />
               </div>
               
-              {/* YENİ: DİNAMİK XÜSUSİYYƏTLƏR YERİ */}
-              <div className="flex flex-col gap-2 md:col-span-2">
-                <label className="text-sm text-slate-400">Bütün Xüsusiyyətlər (Vergüllə ayır. İstədiyin qədər əlavə et)</label>
-                <input type="text" value={projFeatures} onChange={(e) => setProjFeatures(e.target.value)} placeholder="Məs: Sürət: 180, Maddə: Na, Çəki: 50g, RAM: 16GB" className="bg-black/40 border border-emerald-500/30 rounded-xl px-4 py-4 text-white focus:border-emerald-500 outline-none shadow-[inset_0_0_15px_rgba(16,185,129,0.1)]" />
+              <div className="flex flex-col gap-1.5 md:gap-2 md:col-span-2">
+                <label className="text-xs md:text-sm text-slate-400">Xüsusiyyətlər (Vergüllə ayır)</label>
+                <input type="text" value={projFeatures} onChange={(e) => setProjFeatures(e.target.value)} placeholder="Məs: Sürət: 180, Çəki: 50g" className="bg-black/40 border border-emerald-500/30 rounded-xl px-4 py-3 md:py-4 text-white focus:border-emerald-500 outline-none shadow-[inset_0_0_15px_rgba(16,185,129,0.1)]" />
               </div>
               
-              <div className="flex flex-col gap-2 md:col-span-2">
-                <label className="text-sm text-slate-400">Texnologiyalar (Vergüllə ayır)</label>
-                <input type="text" value={projTech} onChange={(e) => setProjTech(e.target.value)} placeholder="Məs: Python, Arduino, React" className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none" />
+              <div className="flex flex-col gap-1.5 md:gap-2 md:col-span-2">
+                <label className="text-xs md:text-sm text-slate-400">Texnologiyalar (Vergüllə ayır)</label>
+                <input type="text" value={projTech} onChange={(e) => setProjTech(e.target.value)} placeholder="Məs: Python, Arduino" className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none" />
               </div>
-              <button type="submit" disabled={uploadingProj} className="md:col-span-2 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50">
+              <button type="submit" disabled={uploadingProj} className="md:col-span-2 py-3 md:py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50">
                 {uploadingProj ? "Yüklənir..." : <><Briefcase size={20} /> Proyekti Yüklə</>}
               </button>
             </form>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {projects.map((proj) => (
-                <div key={proj.id} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-                  <div className="h-48 w-full relative">
+                <div key={proj.id} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden relative group">
+                  <div className="h-40 md:h-48 w-full relative">
                     <img src={proj.image} alt={proj.title} className="w-full h-full object-cover" />
-                    <button onClick={() => handleDeleteProject(proj.id)} className="absolute top-3 right-3 p-2 bg-red-600/90 text-white rounded-lg hover:bg-red-500"><Trash2 size={16}/></button>
+                    <button onClick={() => handleDeleteProject(proj.id)} className="absolute top-2 right-2 md:top-3 md:right-3 p-2 bg-red-600/90 text-white rounded-lg hover:bg-red-500 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"><Trash2 size={16}/></button>
                   </div>
-                  <div className="p-5"><h3 className="font-bold text-xl text-white mb-2">{proj.title}</h3></div>
+                  <div className="p-4 md:p-5"><h3 className="font-bold text-base md:text-xl text-white truncate">{proj.title}</h3></div>
                 </div>
               ))}
             </div>
           </motion.div>
         )}
 
-        {/* AYARLAR TABI (Bio (Haqqımda) mətni əlavə edildi) */}
+        {/* AYARLAR TABI */}
         {activeTab === 'settings' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <h2 className="text-3xl font-black mb-8 border-b border-white/10 pb-4 text-amber-400">Sayt Ayarları</h2>
-            <form onSubmit={handleSaveSettings} className="bg-white/5 border border-white/10 rounded-2xl p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
+            <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b border-white/10 pb-4 text-amber-400">Sayt Ayarları</h2>
+            <form onSubmit={handleSaveSettings} className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
               
-              {/* Haqqımda Mətni */}
-              <div className="flex flex-col gap-4 md:col-span-2">
-                <h3 className="text-lg font-bold text-white">Haqqımda Mətni (Ana səhifədəki adın altındakı yazı)</h3>
+              <div className="flex flex-col gap-3 md:gap-4 md:col-span-2">
+                <h3 className="text-base md:text-lg font-bold text-white">Haqqımda Mətni</h3>
                 <textarea 
                   value={bioText} 
                   onChange={(e) => setBioText(e.target.value)} 
                   rows={4} 
-                  className="bg-black/40 border border-amber-500/30 rounded-xl px-4 py-3 text-white focus:border-amber-500 outline-none resize-none" 
+                  className="bg-black/40 border border-amber-500/30 rounded-xl px-4 py-3 text-white focus:border-amber-500 outline-none resize-none text-sm md:text-base" 
                   placeholder="Haqqımda məlumatı buraya yazın..."
                 />
               </div>
 
-              <div className="flex flex-col gap-4">
-                <h3 className="text-lg font-bold text-white">Ana Səhifə (3D Şəkil)</h3>
-                <div className="w-full aspect-[3/4] bg-black/50 rounded-xl overflow-hidden border border-white/10 flex items-center justify-center">
+              <div className="flex flex-col gap-3 md:gap-4">
+                <h3 className="text-base md:text-lg font-bold text-white">Ana Səhifə (3D Şəkil)</h3>
+                <div className="w-full max-w-[200px] md:max-w-none aspect-[3/4] mx-auto md:mx-0 bg-black/50 rounded-xl overflow-hidden border border-white/10 flex items-center justify-center">
                   <img src={homeFile ? URL.createObjectURL(homeFile) : settingsData.home_image} className="w-full h-full object-cover opacity-80" alt="Home" />
                 </div>
-                <input type="file" accept="image/*" onChange={(e) => setHomeFile(e.target.files?.[0] || null)} className="bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-amber-600/30 file:text-amber-400" />
+                <input type="file" accept="image/*" onChange={(e) => setHomeFile(e.target.files?.[0] || null)} className="bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs md:file:text-sm file:font-bold file:bg-amber-600/30 file:text-amber-400" />
               </div>
 
-              <div className="flex flex-col gap-4">
-                <h3 className="text-lg font-bold text-white">Əlaqə Səhifəsi (Dairəvi Şəkil)</h3>
-                <div className="w-48 h-48 mx-auto bg-black/50 rounded-full overflow-hidden border-4 border-white/10 flex items-center justify-center">
+              <div className="flex flex-col gap-3 md:gap-4">
+                <h3 className="text-base md:text-lg font-bold text-white">Əlaqə Səhifəsi (Profil Şəkli)</h3>
+                <div className="w-32 h-32 md:w-48 md:h-48 mx-auto bg-black/50 rounded-full overflow-hidden border-4 border-white/10 flex items-center justify-center">
                   <img src={contactFile ? URL.createObjectURL(contactFile) : settingsData.contact_image} className="w-full h-full object-cover opacity-80" alt="Contact" />
                 </div>
-                <input type="file" accept="image/*" onChange={(e) => setContactFile(e.target.files?.[0] || null)} className="bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-amber-600/30 file:text-amber-400 mt-auto" />
+                <input type="file" accept="image/*" onChange={(e) => setContactFile(e.target.files?.[0] || null)} className="bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs md:file:text-sm file:font-bold file:bg-amber-600/30 file:text-amber-400 mt-auto" />
               </div>
 
-              <button type="submit" disabled={uploadingSettings} className="md:col-span-2 py-4 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 mt-4 shadow-lg shadow-amber-600/20">
+              <button type="submit" disabled={uploadingSettings} className="md:col-span-2 py-3 md:py-4 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 mt-2 md:mt-4 shadow-lg shadow-amber-600/20">
                 {uploadingSettings ? "Yüklənir..." : <><Check size={20} /> Bütün Ayarları Yenilə</>}
               </button>
             </form>
@@ -372,6 +384,26 @@ export default function AdminPanel() {
         )}
 
       </div>
+
+      {/* MOBİL ÜÇÜN ALT MENYU (Yalnız Telefonda görünür) */}
+      <div className="md:hidden fixed bottom-0 left-0 w-full bg-[#050b14]/95 border-t border-white/10 backdrop-blur-xl p-2 pb-4 sm:pb-2 flex items-center justify-around z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+        <button onClick={() => setActiveTab('messages')} className={`p-3 rounded-xl transition-all ${activeTab === 'messages' ? 'bg-blue-600/20 text-blue-400 scale-110' : 'text-slate-500 hover:text-white'}`}>
+          <MessageSquare size={22} />
+        </button>
+        <button onClick={() => setActiveTab('folders')} className={`p-3 rounded-xl transition-all ${activeTab === 'folders' ? 'bg-cyan-600/20 text-cyan-400 scale-110' : 'text-slate-500 hover:text-white'}`}>
+          <Folder size={22} />
+        </button>
+        <button onClick={() => setActiveTab('certificates')} className={`p-3 rounded-xl transition-all ${activeTab === 'certificates' ? 'bg-purple-600/20 text-purple-400 scale-110' : 'text-slate-500 hover:text-white'}`}>
+          <Award size={22} />
+        </button>
+        <button onClick={() => setActiveTab('projects')} className={`p-3 rounded-xl transition-all ${activeTab === 'projects' ? 'bg-emerald-600/20 text-emerald-400 scale-110' : 'text-slate-500 hover:text-white'}`}>
+          <Briefcase size={22} />
+        </button>
+        <button onClick={() => setActiveTab('settings')} className={`p-3 rounded-xl transition-all ${activeTab === 'settings' ? 'bg-amber-600/20 text-amber-400 scale-110' : 'text-slate-500 hover:text-white'}`}>
+          <Settings size={22} />
+        </button>
+      </div>
+
     </div>
   );
 }
