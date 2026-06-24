@@ -68,7 +68,6 @@ export default function AdminPanel() {
     setBioText(data.bio || '');
   };
 
-  // YENİLƏNDİ: isCv parametri əlavə edildi
   const uploadToCloudinary = async (file: File, isCv: boolean = false) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -76,7 +75,6 @@ export default function AdminPanel() {
     const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`, { method: 'POST', body: formData });
     const data = await res.json();
     
-    // Əgər fayl şəkildirsə və CV deyilsə kvadrat kəs, əgər CV-dirsə olduğu kimi saxla
     if (file.type.startsWith('image/') && !isCv) {
        return data.secure_url.replace('/upload/', '/upload/c_fill,g_auto,w_800,h_800,f_auto,q_auto/');
     }
@@ -88,6 +86,13 @@ export default function AdminPanel() {
     if (!newCategory.trim()) return;
     await fetch('/api/categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newCategory }) });
     setNewCategory(''); fetchCategories();
+  };
+
+  // YENİ: KATALOQ SİLMƏ FUNKSİYASI
+  const handleDeleteCategory = async (id: number) => {
+    if(!confirm("Bu kataloqu silmək istədiyinizə əminsiniz? Kataloqun içindəki sertifikatlar silinməyəcək, fərdi sertifikatlara keçəcək.")) return;
+    await fetch('/api/categories', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    fetchCategories();
   };
 
   const handleCreateCertificate = async (e: React.FormEvent) => {
@@ -134,7 +139,6 @@ export default function AdminPanel() {
 
       if (homeFile) newHomeImage = await uploadToCloudinary(homeFile);
       if (contactFile) newContactImage = await uploadToCloudinary(contactFile);
-      // YENİLƏNDİ: CV yükləyəndə "true" göndəririk ki, kəsilməsin
       if (cvFile) newCvLink = await uploadToCloudinary(cvFile, true); 
 
       await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ home_image: newHomeImage, contact_image: newContactImage, bio: bioText, cv_link: newCvLink }) });
@@ -239,7 +243,7 @@ export default function AdminPanel() {
           </motion.div>
         )}
 
-        {/* QOVLUQLAR */}
+        {/* QOVLUQLAR (YENİLƏNDİ: SİLMƏ DÜYMƏSİ ƏLAVƏ EDİLDİ) */}
         {activeTab === 'folders' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b border-white/10 pb-4">Kataloq İdarəetməsi</h2>
@@ -249,9 +253,15 @@ export default function AdminPanel() {
             </form>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {categories.map((cat, i) => (
-                <div key={i} className="p-4 sm:p-6 bg-white/5 border border-white/10 rounded-2xl flex items-center gap-4">
-                  <div className="p-3 bg-cyan-500/20 text-cyan-400 rounded-xl"><Folder size={20} className="sm:w-6 sm:h-6" /></div>
-                  <span className="font-bold text-base sm:text-lg">{cat.name}</span>
+                <div key={i} className="p-4 sm:p-6 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-between group">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-cyan-500/20 text-cyan-400 rounded-xl"><Folder size={20} className="sm:w-6 sm:h-6" /></div>
+                    <span className="font-bold text-base sm:text-lg">{cat.name}</span>
+                  </div>
+                  {/* SİLMƏ DÜYMƏSİ */}
+                  <button onClick={() => handleDeleteCategory(cat.id)} className="p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-xl transition-all sm:opacity-0 sm:group-hover:opacity-100">
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               ))}
             </div>
@@ -350,7 +360,7 @@ export default function AdminPanel() {
           </motion.div>
         )}
 
-        {/* AYARLAR TABI (YENİLƏNDİ: CV FAYLI BÖLMƏSİ TAM) */}
+        {/* AYARLAR TABI */}
         {activeTab === 'settings' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b border-white/10 pb-4 text-amber-400">Sayt Ayarları</h2>
@@ -383,7 +393,6 @@ export default function AdminPanel() {
                 <input type="file" accept="image/*" onChange={(e) => setContactFile(e.target.files?.[0] || null)} className="bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs md:file:text-sm file:font-bold file:bg-amber-600/30 file:text-amber-400 mt-auto" />
               </div>
 
-              {/* CV YÜKLƏMƏ XANASI (Şəkil və PDF qəbul edir) */}
               <div className="flex flex-col gap-3 md:gap-4 md:col-span-2 pt-6 border-t border-white/10">
                 <h3 className="text-base md:text-lg font-bold text-white flex items-center gap-2">
                   <FileText size={20} className="text-amber-400" /> 
