@@ -11,7 +11,7 @@ interface Certificate {
   title: string; 
   image: string; 
   rank: 'gold' | 'silver' | 'bronze' | 'none'; 
-  category_name?: string; // Turso-dan gələn qrup adı
+  category_name?: string;
 }
 
 export default function Achievements() {
@@ -23,7 +23,6 @@ export default function Achievements() {
   const [viewGroup, setViewGroup] = useState<string | null>(null);
   const [viewCert, setViewCert] = useState<Certificate | null>(null);
 
-  // Səhifə açılanda məlumatları Turso-dan çəkirik
   useEffect(() => {
     const fetchCerts = async () => {
       try {
@@ -39,10 +38,8 @@ export default function Achievements() {
     fetchCerts();
   }, []);
 
-  // Sertifikatları Qruplara (Kataloqlara) və Fərdilərə ayırırıq
   const individualCerts = certificates.filter(c => !c.category_name);
   
-  // Qrupları avtomatik formalaşdıran ağıllı sistem
   const groupedCerts = certificates.reduce((acc: any, cert) => {
     if (cert.category_name) {
       if (!acc[cert.category_name]) acc[cert.category_name] = [];
@@ -55,37 +52,37 @@ export default function Achievements() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-transparent p-10 pt-32 flex justify-center items-center">
-        <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+      <main className="min-h-screen bg-transparent p-4 md:p-10 pt-32 flex justify-center items-center">
+        <div className="w-12 h-12 md:w-16 md:h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-transparent p-6 md:p-10 pt-32 transition-colors duration-500 relative z-10">
+    <main className="min-h-screen bg-transparent p-4 sm:p-6 md:p-10 pt-24 md:pt-32 transition-colors duration-500 relative z-10">
       <div className="max-w-7xl mx-auto">
         
-        <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-16 uppercase tracking-tighter border-l-4 border-cyan-500 pl-6">
+        <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white mb-10 md:mb-16 uppercase tracking-tighter border-l-4 border-cyan-500 pl-4 md:pl-6">
           {t('ach')}
         </h1>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-16">
           
           {/* DINAMİK QOVLUQLAR (KATALOQLAR) */}
           {groupNames.map(groupName => {
             const certsInGroup = groupedCerts[groupName];
-            const lastCert = certsInGroup[0]; // Ən son yüklənən sertifikat
+            const lastCert = certsInGroup[0]; 
 
             return (
-              <div key={groupName} className="group cursor-pointer flex flex-col" onClick={() => setViewGroup(groupName)}>
-                <div className="relative h-64 md:h-72 w-full">
+              <div key={groupName} className="group cursor-pointer flex flex-col items-center sm:items-stretch" onClick={() => setViewGroup(groupName)}>
+                <div className="relative h-56 sm:h-64 md:h-72 w-full max-w-[320px] sm:max-w-none">
                    {/* 3D Dərinlik */}
-                   <div className="absolute top-4 left-4 w-full h-full bg-slate-800/80 rounded-2xl rotate-6 z-0 border border-white/5 transition-colors"></div>
-                   <div className="absolute top-2 left-2 w-full h-full bg-slate-900/80 rounded-2xl -rotate-3 z-10 border border-white/10 transition-colors"></div>
+                   <div className="absolute top-3 left-3 md:top-4 md:left-4 w-full h-full bg-slate-800/80 rounded-xl md:rounded-2xl rotate-6 z-0 border border-white/5 transition-colors"></div>
+                   <div className="absolute top-1.5 left-1.5 md:top-2 md:left-2 w-full h-full bg-slate-900/80 rounded-xl md:rounded-2xl -rotate-3 z-10 border border-white/10 transition-colors"></div>
                    
                    {/* Əsas Qovluq */}
-                   <div className="relative z-20 w-full h-full p-[4px] liquid-led led-gold rounded-2xl shadow-2xl transition-transform duration-500 group-hover:scale-[1.03] cursor-pointer">
-                      <div className="w-full h-full bg-black rounded-[14px] overflow-hidden relative">
+                   <div className="relative z-20 w-full h-full p-[3px] md:p-[4px] liquid-led led-gold rounded-xl md:rounded-2xl shadow-2xl transition-transform duration-500 group-hover:scale-[1.03] cursor-pointer">
+                      <div className="w-full h-full bg-black rounded-[10px] md:rounded-[14px] overflow-hidden relative">
                         <img 
                           src={lastCert?.image} 
                           className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500 grayscale group-hover:grayscale-0" 
@@ -93,14 +90,14 @@ export default function Achievements() {
                         />
                         <div className="absolute inset-0 bg-black/50 group-hover:bg-black/30 transition-colors duration-500"></div>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-16 h-16 rounded-full bg-black/60 border border-white/10 backdrop-blur-md flex items-center justify-center text-white font-black text-xl shadow-[0_0_20px_rgba(0,0,0,0.8)]">
+                          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-black/60 border border-white/10 backdrop-blur-md flex items-center justify-center text-white font-black text-lg md:text-xl shadow-[0_0_20px_rgba(0,0,0,0.8)]">
                             +{certsInGroup.length}
                           </div>
                         </div>
                       </div>
                    </div>
                 </div>
-                <p className="mt-6 text-center text-slate-700 dark:text-slate-300 font-bold text-sm uppercase tracking-wide">
+                <p className="mt-5 md:mt-6 text-center text-slate-700 dark:text-slate-300 font-bold text-xs md:text-sm uppercase tracking-wide">
                   {groupName} Kataloqu
                 </p>
               </div>
@@ -109,10 +106,10 @@ export default function Achievements() {
 
           {/* FƏRDİ SERTİFİKATLAR */}
           {individualCerts.map(cert => (
-            <div key={cert.id} className="cursor-pointer flex flex-col" onClick={() => setViewCert(cert)}>
-              <Tilt tiltMaxAngleX={12} tiltMaxAngleY={12} className="h-64 md:h-72 w-full">
-                <div className={`relative w-full h-full p-[4px] liquid-led led-${cert.rank} rounded-2xl shadow-xl transition-all duration-300 hover:shadow-cyan-500/20`}>
-                  <div className="w-full h-full bg-black rounded-[14px] overflow-hidden relative group">
+            <div key={cert.id} className="cursor-pointer flex flex-col items-center sm:items-stretch" onClick={() => setViewCert(cert)}>
+              <Tilt tiltMaxAngleX={12} tiltMaxAngleY={12} className="h-56 sm:h-64 md:h-72 w-full max-w-[320px] sm:max-w-none">
+                <div className={`relative w-full h-full p-[3px] md:p-[4px] liquid-led led-${cert.rank} rounded-xl md:rounded-2xl shadow-xl transition-all duration-300 hover:shadow-cyan-500/20`}>
+                  <div className="w-full h-full bg-black rounded-[10px] md:rounded-[14px] overflow-hidden relative group">
                     <img 
                       src={cert.image} 
                       className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" 
@@ -121,7 +118,7 @@ export default function Achievements() {
                   </div>
                 </div>
               </Tilt>
-              <p className="mt-6 text-center text-slate-700 dark:text-slate-300 font-bold text-sm">
+              <p className="mt-5 md:mt-6 text-center text-slate-700 dark:text-slate-300 font-bold text-xs md:text-sm px-2">
                 {cert.title}
               </p>
             </div>
@@ -129,32 +126,35 @@ export default function Achievements() {
         </div>
       </div>
 
-      {/* MODAL 1: Kataloq Açıldıqda İçi */}
+      {/* MODAL 1: Kataloq Açıldıqda İçi (Scroll əlavə edildi) */}
       <AnimatePresence>
         {viewGroup && (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
-            className="fixed inset-0 z-[110] bg-white/90 dark:bg-black/95 backdrop-blur-xl flex items-center justify-center p-6"
+            className="fixed inset-0 z-[110] bg-white/95 dark:bg-black/95 backdrop-blur-xl flex flex-col items-center justify-start md:justify-center p-4 md:p-10 pt-20 md:pt-10"
           >
-            <div className="max-w-6xl w-full">
-              <div className="flex justify-between items-center mb-10 border-b border-slate-300 dark:border-slate-800 pb-4">
-                <h2 className="text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3 uppercase">
-                  <Grid className="text-cyan-500" /> {viewGroup} Sertifikatları
+            <div className="max-w-6xl w-full h-full flex flex-col md:max-h-[85vh]">
+              {/* Başlıq hissəsi sabit qalır */}
+              <div className="flex justify-between items-center mb-6 md:mb-10 border-b border-slate-300 dark:border-slate-800 pb-4 shrink-0">
+                <h2 className="text-xl md:text-3xl font-black text-slate-900 dark:text-white flex items-center gap-2 md:gap-3 uppercase">
+                  <Grid className="text-cyan-500 w-6 h-6 md:w-8 md:h-8" /> 
+                  <span className="truncate max-w-[200px] sm:max-w-none">{viewGroup}</span>
                 </h2>
-                <button onClick={() => setViewGroup(null)} className="p-3 bg-slate-200 dark:bg-white/10 rounded-full text-slate-800 dark:text-white hover:bg-red-500 hover:text-white transition-colors">
-                  <X />
+                <button onClick={() => setViewGroup(null)} className="p-2 md:p-3 bg-slate-200 dark:bg-white/10 rounded-full text-slate-800 dark:text-white hover:bg-red-500 hover:text-white transition-colors">
+                  <X className="w-5 h-5 md:w-6 md:h-6" />
                 </button>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+              {/* İçərik scroll olunur */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 overflow-y-auto pb-20 md:pb-10 pr-1 md:pr-4 custom-scrollbar">
                 {groupedCerts[viewGroup].map((c: Certificate) => (
-                  <div key={c.id} className="group cursor-pointer flex flex-col" onClick={() => setViewCert(c)}>
-                    <div className={`relative w-full p-[3px] liquid-led led-${c.rank} rounded-xl`}>
+                  <div key={c.id} className="group cursor-pointer flex flex-col mx-auto w-full max-w-[320px] sm:max-w-none" onClick={() => setViewCert(c)}>
+                    <div className={`relative w-full p-[2px] md:p-[3px] liquid-led led-${c.rank} rounded-xl`}>
                       <div className="bg-black rounded-[10px] overflow-hidden">
                         <img src={c.image} className="w-full aspect-video object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300" alt={c.title} />
                       </div>
                     </div>
-                    <p className="text-slate-800 dark:text-white text-sm mt-4 font-bold text-center opacity-80 group-hover:opacity-100 transition-opacity">
+                    <p className="text-slate-800 dark:text-white text-xs md:text-sm mt-3 md:mt-4 font-bold text-center opacity-80 group-hover:opacity-100 transition-opacity">
                       {c.title}
                     </p>
                   </div>
@@ -173,8 +173,8 @@ export default function Achievements() {
             className="fixed inset-0 z-[120] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-10"
           >
             <div className="absolute inset-0" onClick={() => setViewCert(null)}></div>
-            <button onClick={() => setViewCert(null)} className="absolute top-6 right-6 md:top-10 md:right-10 p-3 md:p-4 bg-white/10 rounded-full text-white hover:bg-red-500 z-[130] transition-colors shadow-2xl">
-              <X size={24} />
+            <button onClick={() => setViewCert(null)} className="absolute top-4 right-4 md:top-10 md:right-10 p-2 md:p-4 bg-white/10 rounded-full text-white hover:bg-red-500 z-[130] transition-colors shadow-2xl">
+              <X className="w-5 h-5 md:w-6 md:h-6" />
             </button>
             <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="relative max-w-5xl w-full z-10 flex justify-center">
               <img src={viewCert.image} className="max-w-full max-h-[85vh] object-contain bg-[#050b14] rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-white/10" alt={viewCert.title} />
