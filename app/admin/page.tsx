@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Shield, Lock, User, LogOut, MessageSquare, Folder, Award, Plus, Trash2, Edit2, Check, X, UploadCloud, Briefcase, Settings } from 'lucide-react';
+import { Shield, Lock, User, LogOut, MessageSquare, Folder, Award, Plus, Trash2, Edit2, Check, X, UploadCloud, Briefcase, Settings, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function AdminPanel() {
@@ -18,10 +18,10 @@ export default function AdminPanel() {
   const [certificates, setCertificates] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   
-  // Ayarlar Formu
   const [settingsData, setSettingsData] = useState<any>({});
   const [homeFile, setHomeFile] = useState<File | null>(null);
   const [contactFile, setContactFile] = useState<File | null>(null);
+  const [cvFile, setCvFile] = useState<File | null>(null);
   const [bioText, setBioText] = useState('');
   const [uploadingSettings, setUploadingSettings] = useState(false);
   
@@ -33,7 +33,6 @@ export default function AdminPanel() {
   const [certCategory, setCertCategory] = useState('none');
   const [uploadingCert, setUploadingCert] = useState(false);
 
-  // Proyekt Formu
   const [projTitle, setProjTitle] = useState('');
   const [projDesc, setProjDesc] = useState('');
   const [projFeatures, setProjFeatures] = useState(''); 
@@ -69,13 +68,19 @@ export default function AdminPanel() {
     setBioText(data.bio || '');
   };
 
-  const uploadToCloudinary = async (file: File) => {
+  // YENİLƏNDİ: isCv parametri əlavə edildi
+  const uploadToCloudinary = async (file: File, isCv: boolean = false) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`, { method: 'POST', body: formData });
     const data = await res.json();
-    return data.secure_url.replace('/upload/', '/upload/c_fill,g_auto,w_800,h_800,f_auto,q_auto/');
+    
+    // Əgər fayl şəkildirsə və CV deyilsə kvadrat kəs, əgər CV-dirsə olduğu kimi saxla
+    if (file.type.startsWith('image/') && !isCv) {
+       return data.secure_url.replace('/upload/', '/upload/c_fill,g_auto,w_800,h_800,f_auto,q_auto/');
+    }
+    return data.secure_url;
   };
 
   const handleCreateCategory = async (e: React.FormEvent) => {
@@ -125,12 +130,17 @@ export default function AdminPanel() {
     try {
       let newHomeImage = settingsData.home_image;
       let newContactImage = settingsData.contact_image;
+      let newCvLink = settingsData.cv_link;
+
       if (homeFile) newHomeImage = await uploadToCloudinary(homeFile);
       if (contactFile) newContactImage = await uploadToCloudinary(contactFile);
+      // YENİLƏNDİ: CV yükləyəndə "true" göndəririk ki, kəsilməsin
+      if (cvFile) newCvLink = await uploadToCloudinary(cvFile, true); 
 
-      await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ home_image: newHomeImage, contact_image: newContactImage, bio: bioText }) });
+      await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ home_image: newHomeImage, contact_image: newContactImage, bio: bioText, cv_link: newCvLink }) });
+      
       alert("Ayarlar uğurla yeniləndi!");
-      fetchSettings(); setHomeFile(null); setContactFile(null);
+      fetchSettings(); setHomeFile(null); setContactFile(null); setCvFile(null);
     } catch (err) { alert("Xəta baş verdi!"); } finally { setUploadingSettings(false); }
   };
 
@@ -174,7 +184,6 @@ export default function AdminPanel() {
   return (
     <div className="min-h-screen bg-[#050b14] flex flex-col md:flex-row text-white relative z-[200]">
       
-      {/* MOBİL ÜÇÜN ÜST BAŞLIQ (Yalnız Telefonda görünür) */}
       <div className="md:hidden flex items-center justify-between p-4 bg-black/80 border-b border-white/10 backdrop-blur-xl sticky top-0 z-40">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center"><Shield size={16} className="text-black" /></div>
@@ -183,7 +192,6 @@ export default function AdminPanel() {
         <button onClick={handleLogout} className="p-2 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-colors"><LogOut size={20} /></button>
       </div>
 
-      {/* KOMPÜTER ÜÇÜN YAN MENYU (Yalnız Desktopda görünür) */}
       <div className="hidden md:flex w-64 bg-black/50 border-r border-white/10 backdrop-blur-xl p-6 flex-col h-screen sticky top-0 overflow-y-auto z-40">
         <div className="flex items-center gap-3 mb-10"><div className="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center"><Shield size={20} className="text-black" /></div><span className="font-black text-xl tracking-wider uppercase">Admin</span></div>
         <nav className="flex flex-col gap-2 flex-1">
@@ -196,7 +204,6 @@ export default function AdminPanel() {
         <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors mt-6"><LogOut size={20} /> Çıxış</button>
       </div>
 
-      {/* ƏSAS MƏZMUN (Məlumatların göründüyü yer) */}
       <div className="flex-1 p-4 sm:p-6 md:p-10 pb-28 md:pb-10 overflow-y-auto w-full">
         
         {/* MESAJLAR */}
@@ -343,7 +350,7 @@ export default function AdminPanel() {
           </motion.div>
         )}
 
-        {/* AYARLAR TABI */}
+        {/* AYARLAR TABI (YENİLƏNDİ: CV FAYLI BÖLMƏSİ TAM) */}
         {activeTab === 'settings' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b border-white/10 pb-4 text-amber-400">Sayt Ayarları</h2>
@@ -376,6 +383,26 @@ export default function AdminPanel() {
                 <input type="file" accept="image/*" onChange={(e) => setContactFile(e.target.files?.[0] || null)} className="bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs md:file:text-sm file:font-bold file:bg-amber-600/30 file:text-amber-400 mt-auto" />
               </div>
 
+              {/* CV YÜKLƏMƏ XANASI (Şəkil və PDF qəbul edir) */}
+              <div className="flex flex-col gap-3 md:gap-4 md:col-span-2 pt-6 border-t border-white/10">
+                <h3 className="text-base md:text-lg font-bold text-white flex items-center gap-2">
+                  <FileText size={20} className="text-amber-400" /> 
+                  CV Yüklə (PDF və ya Şəkil)
+                </h3>
+                {settingsData.cv_link && (
+                  <a href={settingsData.cv_link} target="_blank" rel="noreferrer" className="text-sm text-amber-400 hover:underline mb-2 w-max">
+                    Cari CV-yə bax (Download)
+                  </a>
+                )}
+                <input 
+                  type="file" 
+                  accept=".pdf,.doc,.docx,image/*" 
+                  onChange={(e) => setCvFile(e.target.files?.[0] || null)} 
+                  className="bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs md:file:text-sm file:font-bold file:bg-amber-600/30 file:text-amber-400" 
+                />
+                <p className="text-xs text-slate-500">PDF, Word sənədləri və ya Şəkil (JPG, PNG) formatları qəbul olunur.</p>
+              </div>
+
               <button type="submit" disabled={uploadingSettings} className="md:col-span-2 py-3 md:py-4 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 mt-2 md:mt-4 shadow-lg shadow-amber-600/20">
                 {uploadingSettings ? "Yüklənir..." : <><Check size={20} /> Bütün Ayarları Yenilə</>}
               </button>
@@ -385,7 +412,7 @@ export default function AdminPanel() {
 
       </div>
 
-      {/* MOBİL ÜÇÜN ALT MENYU (Yalnız Telefonda görünür) */}
+      {/* MOBİL ÜÇÜN ALT MENYU */}
       <div className="md:hidden fixed bottom-0 left-0 w-full bg-[#050b14]/95 border-t border-white/10 backdrop-blur-xl p-2 pb-4 sm:pb-2 flex items-center justify-around z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
         <button onClick={() => setActiveTab('messages')} className={`p-3 rounded-xl transition-all ${activeTab === 'messages' ? 'bg-blue-600/20 text-blue-400 scale-110' : 'text-slate-500 hover:text-white'}`}>
           <MessageSquare size={22} />
