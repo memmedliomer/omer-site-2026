@@ -66,29 +66,30 @@ export default function Achievements() {
           {t('ach')}
         </h1>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 lg:gap-14">
           
-          {/* DINAMİK QOVLUQLAR (KATALOQLAR) */}
+          {/* DINAMİK QOVLUQLAR (KATALOQLAR) - SƏRT HÜNDÜRLÜK (h-64 / h-80) */}
           {groupNames.map(groupName => {
             const certsInGroup = groupedCerts[groupName];
             const lastCert = certsInGroup[0]; 
 
             return (
-              <div key={groupName} className="group cursor-pointer flex flex-col items-center sm:items-stretch" onClick={() => setViewGroup(groupName)}>
-                <div className="relative h-56 sm:h-64 md:h-72 w-full max-w-[320px] sm:max-w-none">
+              <div key={groupName} className="group cursor-pointer flex flex-col mx-auto w-full max-w-[320px] sm:max-w-none" onClick={() => setViewGroup(groupName)}>
+                {/* ZİREHLİ YER: Hündürlük burada sabitləndi! */}
+                <div className="relative h-64 sm:h-72 lg:h-80 w-full">
                    {/* 3D Dərinlik */}
-                   <div className="absolute top-3 left-3 md:top-4 md:left-4 w-full h-full bg-slate-800/80 rounded-xl md:rounded-2xl rotate-6 z-0 border border-white/5 transition-colors"></div>
-                   <div className="absolute top-1.5 left-1.5 md:top-2 md:left-2 w-full h-full bg-slate-900/80 rounded-xl md:rounded-2xl -rotate-3 z-10 border border-white/10 transition-colors"></div>
+                   <div className="absolute top-3 left-3 md:top-4 md:left-4 w-full h-full bg-slate-800/80 rounded-xl md:rounded-2xl rotate-3 z-0 border border-white/5 transition-colors"></div>
+                   <div className="absolute top-1.5 left-1.5 md:top-2 md:left-2 w-full h-full bg-slate-900/80 rounded-xl md:rounded-2xl -rotate-2 z-10 border border-white/10 transition-colors"></div>
                    
                    {/* Əsas Qovluq */}
                    <div className="relative z-20 w-full h-full p-[3px] md:p-[4px] liquid-led led-gold rounded-xl md:rounded-2xl shadow-2xl transition-transform duration-500 group-hover:scale-[1.03] cursor-pointer">
-                      <div className="w-full h-full bg-black rounded-[10px] md:rounded-[14px] overflow-hidden relative">
+                      <div className="w-full h-full bg-[#050b14] rounded-[10px] md:rounded-[14px] overflow-hidden relative flex items-center justify-center p-3">
                         <img 
                           src={lastCert?.image} 
-                          className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500 grayscale group-hover:grayscale-0" 
+                          className="w-full h-full object-contain opacity-60 group-hover:opacity-80 transition-opacity duration-500 grayscale group-hover:grayscale-0 bg-black/20 rounded-lg" 
                           alt="Folder Cover" 
                         />
-                        <div className="absolute inset-0 bg-black/50 group-hover:bg-black/30 transition-colors duration-500"></div>
+                        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500 rounded-[10px] md:rounded-[14px]"></div>
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-black/60 border border-white/10 backdrop-blur-md flex items-center justify-center text-white font-black text-lg md:text-xl shadow-[0_0_20px_rgba(0,0,0,0.8)]">
                             +{certsInGroup.length}
@@ -104,21 +105,22 @@ export default function Achievements() {
             );
           })}
 
-          {/* FƏRDİ SERTİFİKATLAR */}
+          {/* FƏRDİ SERTİFİKATLAR - SƏRT HÜNDÜRLÜK */}
           {individualCerts.map(cert => (
-            <div key={cert.id} className="cursor-pointer flex flex-col items-center sm:items-stretch" onClick={() => setViewCert(cert)}>
-              <Tilt tiltMaxAngleX={12} tiltMaxAngleY={12} className="h-56 sm:h-64 md:h-72 w-full max-w-[320px] sm:max-w-none">
+            <div key={cert.id} className="cursor-pointer flex flex-col mx-auto w-full max-w-[320px] sm:max-w-none" onClick={() => setViewCert(cert)}>
+              {/* ZİREHLİ YER: Hündürlük burada sabitləndi! Bütün çərçivələr tən-yarı eyni boyda olacaq */}
+              <Tilt tiltMaxAngleX={12} tiltMaxAngleY={12} className="h-64 sm:h-72 lg:h-80 w-full">
                 <div className={`relative w-full h-full p-[3px] md:p-[4px] liquid-led led-${cert.rank} rounded-xl md:rounded-2xl shadow-xl transition-all duration-300 hover:shadow-cyan-500/20`}>
-                  <div className="w-full h-full bg-black rounded-[10px] md:rounded-[14px] overflow-hidden relative group">
+                  <div className="w-full h-full bg-[#0d1527] rounded-[10px] md:rounded-[14px] overflow-hidden relative group flex items-center justify-center p-3 md:p-4">
                     <img 
                       src={cert.image} 
-                      className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" 
+                      className="w-full h-full object-contain opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-500 rounded-md shadow-lg bg-black/20" 
                       alt={cert.title} 
                     />
                   </div>
                 </div>
               </Tilt>
-              <p className="mt-5 md:mt-6 text-center text-slate-700 dark:text-slate-300 font-bold text-xs md:text-sm px-2">
+              <p className="mt-4 md:mt-5 text-center text-slate-700 dark:text-slate-300 font-bold text-xs md:text-sm px-2">
                 {cert.title}
               </p>
             </div>
@@ -126,7 +128,7 @@ export default function Achievements() {
         </div>
       </div>
 
-      {/* MODAL 1: Kataloq Açıldıqda İçi (Scroll əlavə edildi) */}
+      {/* MODAL 1: Kataloq Açıldıqda İçi */}
       <AnimatePresence>
         {viewGroup && (
           <motion.div 
@@ -134,7 +136,6 @@ export default function Achievements() {
             className="fixed inset-0 z-[110] bg-white/95 dark:bg-black/95 backdrop-blur-xl flex flex-col items-center justify-start md:justify-center p-4 md:p-10 pt-20 md:pt-10"
           >
             <div className="max-w-6xl w-full h-full flex flex-col md:max-h-[85vh]">
-              {/* Başlıq hissəsi sabit qalır */}
               <div className="flex justify-between items-center mb-6 md:mb-10 border-b border-slate-300 dark:border-slate-800 pb-4 shrink-0">
                 <h2 className="text-xl md:text-3xl font-black text-slate-900 dark:text-white flex items-center gap-2 md:gap-3 uppercase">
                   <Grid className="text-cyan-500 w-6 h-6 md:w-8 md:h-8" /> 
@@ -145,13 +146,13 @@ export default function Achievements() {
                 </button>
               </div>
               
-              {/* İçərik scroll olunur */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 overflow-y-auto pb-20 md:pb-10 pr-1 md:pr-4 custom-scrollbar">
                 {groupedCerts[viewGroup].map((c: Certificate) => (
                   <div key={c.id} className="group cursor-pointer flex flex-col mx-auto w-full max-w-[320px] sm:max-w-none" onClick={() => setViewCert(c)}>
                     <div className={`relative w-full p-[2px] md:p-[3px] liquid-led led-${c.rank} rounded-xl`}>
-                      <div className="bg-black rounded-[10px] overflow-hidden">
-                        <img src={c.image} className="w-full aspect-video object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300" alt={c.title} />
+                      {/* Modal içi kartların da hündürlüyü sabitləndi */}
+                      <div className="bg-[#0d1527] rounded-[10px] overflow-hidden h-48 sm:h-56 flex items-center justify-center p-3">
+                        <img src={c.image} className="w-full h-full object-contain opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 rounded-sm bg-black/20" alt={c.title} />
                       </div>
                     </div>
                     <p className="text-slate-800 dark:text-white text-xs md:text-sm mt-3 md:mt-4 font-bold text-center opacity-80 group-hover:opacity-100 transition-opacity">
