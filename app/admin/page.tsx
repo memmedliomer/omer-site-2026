@@ -75,7 +75,11 @@ export default function AdminPanel() {
     const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`, { method: 'POST', body: formData });
     const data = await res.json();
     
-    if (file.type.startsWith('image/') && !isCv) {
+    // Əgər CV və ya sertifikatdırsa, şəkli OLDUĞU KİMİ (orijinal enli formatda) saxla, kəsmə!
+    // activeTab yoxlanışı və ya activeTab === 'certificates' bura təsir edir, ən rahatı:
+    const isCertificate = activeTab === 'certificates';
+    
+    if (file.type.startsWith('image/') && !isCv && !isCertificate) {
        return data.secure_url.replace('/upload/', '/upload/c_fill,g_auto,w_800,h_800,f_auto,q_auto/');
     }
     return data.secure_url;
