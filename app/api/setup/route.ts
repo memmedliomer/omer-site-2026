@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '../../lib/db';
+
 export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     // 1. Əlaqə Formundan gələn mesajlar üçün cədvəl
@@ -34,7 +36,7 @@ export async function GET() {
       )
     `);
 
-    // 4. Proyektlər cədvəli (Xüsusiyyətlər sistemi ilə)
+    // 4. Proyektlər cədvəli
     await db.execute(`
       CREATE TABLE IF NOT EXISTS projects (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,8 +49,7 @@ export async function GET() {
       )
     `);
 
-    // 5. Sayt Ayarları (Şəkillər və Bio)
-    // DİQQƏT: Köhnə quruluşu tam sıfırlamaq üçün əvvəlcə silirik
+    // 5. Sayt Ayarları (Şəkillər, Bio və YENİ CV sütunu)
     await db.execute('DROP TABLE IF EXISTS settings');
     
     await db.execute(`
@@ -56,24 +57,26 @@ export async function GET() {
         id INTEGER PRIMARY KEY CHECK (id = 1),
         home_image TEXT,
         contact_image TEXT,
-        bio TEXT
+        bio TEXT,
+        cv_link TEXT
       )
     `);
 
-    // Bazanı boş buraxmamaq üçün ilkin standart məlumatları yazırıq
+    // İlkin defolt məlumatları yeni cv_link xanası ilə bərabər yazırıq
     await db.execute(`
-      INSERT INTO settings (id, home_image, contact_image, bio) 
+      INSERT INTO settings (id, home_image, contact_image, bio, cv_link) 
       VALUES (
         1, 
         'https://via.placeholder.com/600x800', 
         'https://via.placeholder.com/200x200', 
-        'Mən Ömər Məmmədli, müasir veb texnologiyalar və FPV dron sistemləri üzrə ixtisaslaşmış mühəndisəm. Rəqəmsal dünyada sürətli, təhlükəsiz və innovativ həllər qururam.'
+        'Mən Ömər Məmmədli, müasir veb texnologiyalar və FPV dron sistemləri üzrə ixtisaslaşmış mühəndisəm. Rəqəmsal dünyada sürətli, təhlükəsiz və innovativ həllər qururam.',
+        ''
       )
     `);
 
     return NextResponse.json({ 
       success: true, 
-      message: "Mükəmməl! Ayarlar daxil olmaqla bütün cədvəllər verilənlər bazasında sıfırdan və xətasız quruldu!" 
+      message: "Mükəmməl! CV dəstəyi daxil olmaqla bütün cədvəllər sıfırdan və xətasız quruldu!" 
     });
 
   } catch (error) {
