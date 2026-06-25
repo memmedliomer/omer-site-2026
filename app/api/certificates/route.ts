@@ -5,7 +5,12 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const result = await db.execute('SELECT * FROM certificates');
+    // ZİREHLİ MƏNTİQ: Sertifikatları çəkəndə aid olduqları kataloqun adını da birlikdə çəkirik!
+    const result = await db.execute(`
+      SELECT certificates.*, categories.name AS category_name 
+      FROM certificates 
+      LEFT JOIN categories ON certificates.category_id = categories.id
+    `);
     return NextResponse.json(result.rows);
   } catch (error) {
     return NextResponse.json({ error: 'Xəta baş verdi' }, { status: 500 });
@@ -38,7 +43,7 @@ export async function DELETE(req: Request) {
   }
 }
 
-// YENİ: DÜZƏLİŞ ETMƏK ÜÇÜN (PUT) FUNKSİYASI
+// DÜZƏLİŞ ETMƏK ÜÇÜN (PUT) FUNKSİYASI
 export async function PUT(req: Request) {
   try {
     const { id, title, image, rank, category_id } = await req.json();
