@@ -81,7 +81,7 @@ export default function AdminPanel() {
   const fetchCategories = async () => { const res = await fetch('/api/categories'); const data = await res.json(); setCategories(Array.isArray(data) ? data : []); };
   const fetchCertificates = async () => { const res = await fetch('/api/certificates'); const data = await res.json(); setCertificates(Array.isArray(data) ? data : []); };
   const fetchProjects = async () => { const res = await fetch('/api/projects'); const data = await res.json(); setProjects(Array.isArray(data) ? data : []); };
-  const fetchVisitors = async () => { const res = await fetch('/api/visitors'); const data = await res.json(); setVisitors(Array.isArray(data) ? data : []); };
+  const fetchVisitors = async () => { const res = await fetch('/api/visitors' , { cache: 'no-store' }); const data = await res.json(); setVisitors(Array.isArray(data) ? data : []); };
   const fetchSettings = async () => { 
     const res = await fetch('/api/settings'); 
     const data = await res.json(); 
