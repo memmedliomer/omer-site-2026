@@ -27,12 +27,22 @@ export default function AdminPanel() {
   
   const [newCategory, setNewCategory] = useState('');
 
+  // Yeni Sertifikat Yaratmaq Üçün
   const [certTitle, setCertTitle] = useState('');
   const [certFile, setCertFile] = useState<File | null>(null);
   const [certRank, setCertRank] = useState('none');
   const [certCategory, setCertCategory] = useState('none');
   const [uploadingCert, setUploadingCert] = useState(false);
 
+  // YENİ: Sertifikat Redaktə Etmək Üçün State-lər
+  const [editingCertId, setEditingCertId] = useState<number | null>(null);
+  const [editCertTitle, setEditCertTitle] = useState('');
+  const [editCertFile, setEditCertFile] = useState<File | null>(null);
+  const [editCertRank, setEditCertRank] = useState('none');
+  const [editCertCategory, setEditCertCategory] = useState('none');
+  const [savingCertEdit, setSavingCertEdit] = useState(false);
+
+  // Proyektlər Üçün
   const [projTitle, setProjTitle] = useState('');
   const [projDesc, setProjDesc] = useState('');
   const [projFeatures, setProjFeatures] = useState(''); 
@@ -40,6 +50,7 @@ export default function AdminPanel() {
   const [projFile, setProjFile] = useState<File | null>(null);
   const [uploadingProj, setUploadingProj] = useState(false);
 
+  // Mesajlar Üçün
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editContent, setEditContent] = useState('');
 
@@ -75,10 +86,7 @@ export default function AdminPanel() {
     const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`, { method: 'POST', body: formData });
     const data = await res.json();
     
-    // Əgər CV və ya sertifikatdırsa, şəkli OLDUĞU KİMİ (orijinal enli formatda) saxla, kəsmə!
-    // activeTab yoxlanışı və ya activeTab === 'certificates' bura təsir edir, ən rahatı:
     const isCertificate = activeTab === 'certificates';
-    
     if (file.type.startsWith('image/') && !isCv && !isCertificate) {
        return data.secure_url.replace('/upload/', '/upload/c_fill,g_auto,w_800,h_800,f_auto,q_auto/');
     }
@@ -92,7 +100,6 @@ export default function AdminPanel() {
     setNewCategory(''); fetchCategories();
   };
 
-  // YENİ: KATALOQ SİLMƏ FUNKSİYASI
   const handleDeleteCategory = async (id: number) => {
     if(!confirm("Bu kataloqu silmək istədiyinizə əminsiniz? Kataloqun içindəki sertifikatlar silinməyəcək, fərdi sertifikatlara keçəcək.")) return;
     await fetch('/api/categories', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
@@ -114,6 +121,34 @@ export default function AdminPanel() {
     if(!confirm("Bu sertifikatı silmək istədiyinizə əminsiniz?")) return;
     await fetch('/api/certificates', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
     fetchCertificates();
+  };
+
+  // YENİ: Sertifikata Düzəliş Etmək
+  const handleSaveCertEdit = async (id: number, oldImage: string) => {
+    setSavingCertEdit(true);
+    try {
+      let finalImage = oldImage;
+      if (editCertFile) {
+        finalImage = await uploadToCloudinary(editCertFile); // Təzə şəkil seçilibsə onu yüklə
+      }
+      await fetch('/api/certificates', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          title: editCertTitle,
+          image: finalImage,
+          rank: editCertRank,
+          category_id: editCertCategory
+        })
+      });
+      setEditingCertId(null);
+      fetchCertificates();
+    } catch (err) {
+      alert("Xəta baş verdi!");
+    } finally {
+      setSavingCertEdit(false);
+    }
   };
 
   const handleCreateProject = async (e: React.FormEvent) => {
@@ -247,7 +282,7 @@ export default function AdminPanel() {
           </motion.div>
         )}
 
-        {/* QOVLUQLAR (YENİLƏNDİ: SİLMƏ DÜYMƏSİ ƏLAVƏ EDİLDİ) */}
+        {/* QOVLUQLAR */}
         {activeTab === 'folders' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b border-white/10 pb-4">Kataloq İdarəetməsi</h2>
@@ -262,10 +297,7 @@ export default function AdminPanel() {
                     <div className="p-3 bg-cyan-500/20 text-cyan-400 rounded-xl"><Folder size={20} className="sm:w-6 sm:h-6" /></div>
                     <span className="font-bold text-base sm:text-lg">{cat.name}</span>
                   </div>
-                  {/* SİLMƏ DÜYMƏSİ */}
-                  <button onClick={() => handleDeleteCategory(cat.id)} className="p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-xl transition-all sm:opacity-0 sm:group-hover:opacity-100">
-                    <Trash2 size={16} />
-                  </button>
+                  <button onClick={() => handleDeleteCategory(cat.id)} className="p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-xl transition-all sm:opacity-0 sm:group-hover:opacity-100"><Trash2 size={16} /></button>
                 </div>
               ))}
             </div>
@@ -276,6 +308,8 @@ export default function AdminPanel() {
         {activeTab === 'certificates' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b border-white/10 pb-4">Sertifikat İdarəetməsi</h2>
+            
+            {/* Yeni Sertifikat Əlavə Etmə Formu */}
             <form onSubmit={handleCreateCertificate} className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 mb-8 md:mb-10 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div className="flex flex-col gap-1.5 md:gap-2">
                 <label className="text-xs md:text-sm text-slate-400">Sertifikatın Adı</label>
@@ -305,14 +339,49 @@ export default function AdminPanel() {
                 {uploadingCert ? "Yüklənir..." : <><UploadCloud size={20} /> Yüklə və Saxla</>}
               </button>
             </form>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {certificates.map((cert) => (
-                <div key={cert.id} className="bg-black/40 border border-white/10 rounded-xl overflow-hidden group">
-                  <div className={`h-40 w-full relative border-b-4 border-${cert.rank === 'gold' ? 'yellow-500' : cert.rank === 'silver' ? 'slate-300' : cert.rank === 'bronze' ? 'orange-600' : 'transparent'}`}>
-                    <img src={cert.image} alt={cert.title} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
-                    <button onClick={() => handleDeleteCertificate(cert.id)} className="absolute top-2 right-2 p-2 bg-red-600/80 text-white rounded-lg hover:bg-red-500 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"><Trash2 size={16}/></button>
-                  </div>
-                  <div className="p-3 md:p-4"><h3 className="font-bold text-sm md:text-base text-white truncate">{cert.title}</h3></div>
+                <div key={cert.id}>
+                  {editingCertId === cert.id ? (
+                    // DÜZƏLİŞ ETMƏ (EDIT) REJİMİ
+                    <div className="bg-black/40 border border-purple-500/50 rounded-2xl p-4 flex flex-col gap-3 shadow-lg shadow-purple-500/10">
+                      <input type="text" value={editCertTitle} onChange={(e) => setEditCertTitle(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-sm text-white" placeholder="Sertifikatın Adı" />
+                      <input type="file" accept="image/*" onChange={(e) => setEditCertFile(e.target.files?.[0] || null)} className="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-purple-600/30 file:text-purple-400" />
+                      <div className="flex gap-2">
+                        <select value={editCertRank} onChange={(e) => setEditCertRank(e.target.value)} className="flex-1 bg-white/5 border border-white/10 rounded-lg p-2 text-xs text-white outline-none appearance-none">
+                          <option value="none">Sadə</option><option value="gold">Qızıl</option><option value="silver">Gümüş</option><option value="bronze">Bürünc</option>
+                        </select>
+                        <select value={editCertCategory} onChange={(e) => setEditCertCategory(e.target.value)} className="flex-1 bg-white/5 border border-white/10 rounded-lg p-2 text-xs text-white outline-none appearance-none">
+                          <option value="none">Fərdi</option>{categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+                        </select>
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <button onClick={() => setEditingCertId(null)} className="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs transition-colors flex items-center justify-center gap-1"><X size={14}/> Ləğv et</button>
+                        <button onClick={() => handleSaveCertEdit(cert.id, cert.image)} disabled={savingCertEdit} className="flex-1 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-xs transition-colors flex items-center justify-center gap-1 disabled:opacity-50">{savingCertEdit ? '...' : <><Check size={14}/> Yadda Saxla</>}</button>
+                      </div>
+                    </div>
+                  ) : (
+                    // NORMAL REJİM (GÖSTƏRİM)
+                    <div className="bg-black/40 border border-white/10 rounded-2xl overflow-hidden group">
+                      <div className={`h-48 w-full relative border-b-4 border-${cert.rank === 'gold' ? 'yellow-500' : cert.rank === 'silver' ? 'slate-300' : cert.rank === 'bronze' ? 'orange-600' : 'transparent'}`}>
+                        <img src={cert.image} alt={cert.title} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
+                        
+                        {/* SAĞ KÜNCDƏ İKİ DÜYMƏ: EDİT və SİL */}
+                        <div className="absolute top-3 right-3 flex flex-col gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => {
+                            setEditingCertId(cert.id);
+                            setEditCertTitle(cert.title);
+                            setEditCertRank(cert.rank);
+                            setEditCertCategory(cert.category_id ? cert.category_id.toString() : 'none');
+                            setEditCertFile(null);
+                          }} className="p-2 bg-blue-600/90 text-white rounded-lg hover:bg-blue-500 shadow-lg"><Edit2 size={16}/></button>
+                          <button onClick={() => handleDeleteCertificate(cert.id)} className="p-2 bg-red-600/90 text-white rounded-lg hover:bg-red-500 shadow-lg"><Trash2 size={16}/></button>
+                        </div>
+                      </div>
+                      <div className="p-4"><h3 className="font-bold text-sm md:text-base text-white truncate">{cert.title}</h3></div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
