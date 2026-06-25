@@ -1,15 +1,11 @@
 import { NextResponse } from 'next/server';
 import { db } from '../../lib/db';
+
 export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
-    // Sertifikatları və aid olduqları qrupun adını bazadan çəkirik
-    const result = await db.execute(`
-      SELECT certificates.*, categories.name as category_name 
-      FROM certificates 
-      LEFT JOIN categories ON certificates.category_id = categories.id 
-      ORDER BY certificates.id DESC
-    `);
+    const result = await db.execute('SELECT * FROM certificates');
     return NextResponse.json(result.rows);
   } catch (error) {
     return NextResponse.json({ error: 'Xəta baş verdi' }, { status: 500 });
@@ -19,13 +15,9 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const { title, image, rank, category_id } = await req.json();
-    
-    // Əgər qrup seçilməyibsə (Fərdi sertifikatdırsa), bazaya NULL göndəririk
-    const finalCategoryId = category_id === 'none' ? null : category_id;
-
     await db.execute({
       sql: 'INSERT INTO certificates (title, image, rank, category_id) VALUES (?, ?, ?, ?)',
-      args: [title, image, rank, finalCategoryId]
+      args: [title, image, rank, category_id === 'none' ? null : category_id]
     });
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -42,6 +34,21 @@ export async function DELETE(req: Request) {
     });
     return NextResponse.json({ success: true });
   } catch (error) {
+    return NextResponse.json({ error: 'Xəta baş verdi' }, { status: 500 });
+  }
+}
+
+// YENİ: DÜZƏLİŞ ETMƏK ÜÇÜN (PUT) FUNKSİYASI
+export async function PUT(req: Request) {
+  try {
+    const { id, title, image, rank, category_id } = await req.json();
+    await db.execute({
+      sql: 'UPDATE certificates SET title = ?, image = ?, rank = ?, category_id = ? WHERE id = ?',
+      args: [title, image, rank, category_id === 'none' ? null : category_id, id]
+    });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error(error);
     return NextResponse.json({ error: 'Xəta baş verdi' }, { status: 500 });
   }
 }
