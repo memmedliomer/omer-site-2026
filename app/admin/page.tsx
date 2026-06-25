@@ -41,12 +41,12 @@ export default function AdminPanel() {
   const [editCertCategory, setEditCertCategory] = useState('none');
   const [savingCertEdit, setSavingCertEdit] = useState(false);
 
-  // Proyektlər
+  // Proyektlər - Çoxlu şəkil üçün Array (File[])
   const [projTitle, setProjTitle] = useState('');
   const [projDesc, setProjDesc] = useState('');
   const [projFeatures, setProjFeatures] = useState(''); 
   const [projTech, setProjTech] = useState('');
-  const [projFile, setProjFile] = useState<File | null>(null);
+  const [projFiles, setProjFiles] = useState<File[]>([]);
   const [uploadingProj, setUploadingProj] = useState(false);
 
   const [editingProjId, setEditingProjId] = useState<number | null>(null);
@@ -54,7 +54,7 @@ export default function AdminPanel() {
   const [editProjDesc, setEditProjDesc] = useState('');
   const [editProjFeatures, setEditProjFeatures] = useState('');
   const [editProjTech, setEditProjTech] = useState('');
-  const [editProjFile, setEditProjFile] = useState<File | null>(null);
+  const [editProjFiles, setEditProjFiles] = useState<File[]>([]);
   const [savingProjEdit, setSavingProjEdit] = useState(false);
 
   // Mesajlar
@@ -138,32 +138,47 @@ export default function AdminPanel() {
     } catch (err) { alert("Xəta baş verdi!"); } finally { setSavingCertEdit(false); }
   };
 
-  // --- PROYEKT REDAKTƏ ---
+  // --- PROYEKTLƏR ---
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!projTitle || !projFile) return;
+    if (!projTitle || projFiles.length === 0) return;
     setUploadingProj(true);
     try {
-      const secureImageUrl = await uploadToCloudinary(projFile);
-      await fetch('/api/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: projTitle, description: projDesc, image: secureImageUrl, speed: projFeatures, weight: '', tech_stack: projTech }) });
-      setProjTitle(''); setProjDesc(''); setProjFeatures(''); setProjTech(''); setProjFile(null); fetchProjects();
+      let secureImageUrls = [];
+      for(let i=0; i<projFiles.length; i++) {
+         const url = await uploadToCloudinary(projFiles[i]);
+         secureImageUrls.push(url);
+      }
+      const finalImageString = secureImageUrls.join(',');
+
+      await fetch('/api/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: projTitle, description: projDesc, image: finalImageString, speed: projFeatures, weight: '', tech_stack: projTech }) });
+      setProjTitle(''); setProjDesc(''); setProjFeatures(''); setProjTech(''); setProjFiles([]); fetchProjects();
     } catch (err) { alert("Xəta baş verdi!"); } finally { setUploadingProj(false); }
   };
+
   const handleDeleteProject = async (id: number) => {
     if(!confirm("Bu proyekti silmək istədiyinizə əminsiniz?")) return;
     await fetch('/api/projects', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }); fetchProjects();
   };
+
   const handleSaveProjEdit = async (id: number, oldImage: string) => {
     setSavingProjEdit(true);
     try {
-      let finalImage = oldImage;
-      if (editProjFile) finalImage = await uploadToCloudinary(editProjFile);
+      let finalImageString = oldImage;
+      if (editProjFiles.length > 0) {
+        let secureImageUrls = [];
+        for(let i=0; i<editProjFiles.length; i++) {
+           const url = await uploadToCloudinary(editProjFiles[i]);
+           secureImageUrls.push(url);
+        }
+        finalImageString = secureImageUrls.join(',');
+      }
       await fetch('/api/projects', { 
         method: 'PUT', 
         headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ id, title: editProjTitle, description: editProjDesc, image: finalImage, speed: editProjFeatures, tech_stack: editProjTech }) 
+        body: JSON.stringify({ id, title: editProjTitle, description: editProjDesc, image: finalImageString, speed: editProjFeatures, tech_stack: editProjTech }) 
       });
-      setEditingProjId(null); fetchProjects();
+      setEditingProjId(null); setEditProjFiles([]); fetchProjects();
     } catch (err) { alert("Xəta baş verdi!"); } finally { setSavingProjEdit(false); }
   };
 
@@ -336,7 +351,6 @@ export default function AdminPanel() {
               {certificates.map((cert) => (
                 <div key={cert.id} className="relative group">
                   {editingCertId === cert.id ? (
-                    // DÜZƏLİŞ ETMƏ (EDIT) REJİMİ
                     <div className="bg-black/90 border border-purple-500/80 rounded-2xl p-4 flex flex-col gap-3 shadow-2xl z-10 relative">
                       <input type="text" value={editCertTitle} onChange={(e) => setEditCertTitle(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-sm text-white outline-none focus:border-purple-500" placeholder="Sertifikatın Adı" />
                       <input type="file" accept="image/*" onChange={(e) => setEditCertFile(e.target.files?.[0] || null)} className="w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-600/30 file:text-purple-400 outline-none" />
@@ -354,7 +368,6 @@ export default function AdminPanel() {
                       </div>
                     </div>
                   ) : (
-                    // NORMAL REJİM (GÖSTƏRİM)
                     <div className="bg-black/40 border border-white/10 rounded-2xl overflow-hidden group hover:border-white/20 transition-all">
                       <div className={`h-40 md:h-48 w-full relative border-b-4 border-${cert.rank === 'gold' ? 'yellow-500' : cert.rank === 'silver' ? 'slate-300' : cert.rank === 'bronze' ? 'orange-600' : 'transparent'}`}>
                         <img src={cert.image} alt={cert.title} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
@@ -389,8 +402,8 @@ export default function AdminPanel() {
                 <input type="text" required value={projTitle} onChange={(e) => setProjTitle(e.target.value)} className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none" />
               </div>
               <div className="flex flex-col gap-1.5 md:gap-2">
-                <label className="text-xs md:text-sm text-slate-400">Şəkil Seç</label>
-                <input type="file" accept="image/*" required onChange={(e) => setProjFile(e.target.files?.[0] || null)} className="bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs md:file:text-sm file:font-bold file:bg-emerald-600/30 file:text-emerald-400" />
+                <label className="text-xs md:text-sm text-slate-400">Şəkilləri Seç (Birdən çox seçə bilərsən)</label>
+                <input type="file" accept="image/*" multiple required onChange={(e) => setProjFiles(Array.from(e.target.files || []))} className="bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs md:file:text-sm file:font-bold file:bg-emerald-600/30 file:text-emerald-400" />
               </div>
               <div className="flex flex-col gap-1.5 md:gap-2 md:col-span-2">
                 <label className="text-xs md:text-sm text-slate-400">Qısa Təsvir</label>
@@ -413,7 +426,6 @@ export default function AdminPanel() {
               {projects.map((proj) => (
                 <div key={proj.id} className="relative group">
                   {editingProjId === proj.id ? (
-                    // PROYEKT DÜZƏLİŞ ETMƏ (EDIT) REJİMİ
                     <div className="bg-black/90 border border-emerald-500/80 rounded-2xl md:rounded-[2rem] p-5 md:p-8 flex flex-col gap-4 shadow-2xl z-10 relative">
                        <h3 className="text-emerald-400 font-bold mb-2">Proyekti Redaktə Et</h3>
                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -423,7 +435,7 @@ export default function AdminPanel() {
                          </div>
                          <div className="flex flex-col gap-1">
                            <label className="text-[10px] text-slate-400 uppercase">Şəkil (Dəyişməsən eyni qalır)</label>
-                           <input type="file" accept="image/*" onChange={(e)=>setEditProjFile(e.target.files?.[0] || null)} className="w-full text-xs text-slate-400 file:mr-2 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-600/30 file:text-emerald-400 outline-none" />
+                           <input type="file" accept="image/*" multiple onChange={(e)=>setEditProjFiles(Array.from(e.target.files || []))} className="w-full text-xs text-slate-400 file:mr-2 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-600/30 file:text-emerald-400 outline-none" />
                          </div>
                        </div>
                        <div className="flex flex-col gap-1">
@@ -446,12 +458,10 @@ export default function AdminPanel() {
                        </div>
                     </div>
                   ) : (
-                    // NORMAL PROYEKT KARTI
                     <div className="bg-white/5 border border-white/10 rounded-2xl md:rounded-[2rem] overflow-hidden flex flex-col h-full hover:border-white/20 transition-all">
                       <div className="h-48 md:h-56 w-full relative">
-                        <img src={proj.image} className="w-full h-full object-cover" alt="" />
+                        <img src={proj.image ? proj.image.split(',')[0] : ''} className="w-full h-full object-cover" alt="" />
                         
-                        {/* DÜZƏLİŞ VƏ SİL DÜYMƏLƏRİ - Kartın yuxarı sağ küncündə */}
                         <div className="absolute top-3 right-3 flex gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                              <button onClick={()=>{ 
                                setEditingProjId(proj.id); 
@@ -459,7 +469,7 @@ export default function AdminPanel() {
                                setEditProjDesc(proj.description); 
                                setEditProjFeatures(proj.speed || ''); 
                                setEditProjTech(proj.tech_stack || ''); 
-                               setEditProjFile(null); 
+                               setEditProjFiles([]); 
                              }} className="p-2.5 bg-blue-600/90 text-white rounded-xl hover:bg-blue-500 shadow-lg transition-colors"><Edit2 size={16}/></button>
                              <button onClick={()=>handleDeleteProject(proj.id)} className="p-2.5 bg-red-600/90 text-white rounded-xl hover:bg-red-500 shadow-lg transition-colors"><Trash2 size={16}/></button>
                         </div>
