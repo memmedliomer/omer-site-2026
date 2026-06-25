@@ -12,7 +12,7 @@ export default function VisitorTracker() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            screen: `${window.screen.width}x${window.screen.height}`,
+            screen: typeof window !== 'undefined' ? `${window.screen.width}x${window.screen.height}` : 'Bilinmir',
             page: pathname || '/'
           })
         });
@@ -23,7 +23,7 @@ export default function VisitorTracker() {
     
     const interval = setInterval(pingVisit, 15000);
     return () => clearInterval(interval);
-  }, [pathname]); // Səhifə dəyişəndə də dərhal xəbər edəcək
+  }, [pathname]);
 
   return null;
 }
