@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ExternalLink, Github } from 'lucide-react';
+import { X } from 'lucide-react';
 import Tilt from 'react-parallax-tilt';
 import { useLang } from '../components/Providers';
 
