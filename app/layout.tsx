@@ -3,6 +3,7 @@ import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/Navbar";
 import { Providers } from "./components/Providers";
+import VisitorTracker from "./components/VisitorTracker"; // <-- XƏTA BURADA İDİ, DÜZƏLDİLDİ
 
 const montserrat = Montserrat({ 
   subsets: ["latin", "latin-ext"],
@@ -25,7 +26,7 @@ export default function RootLayout({
       {/* DİQQƏT: body-dən bg rənglərini sildik ki, şəklin qabağını kəsməsin! */}
       <body className={`${montserrat.className} text-slate-900 dark:text-white transition-colors duration-300 min-h-screen relative`}>
         <Providers>
-          
+          <VisitorTracker />
           {/* --- MÜTLƏQ ARXA FON QATI --- */}
           <div className="fixed inset-0 w-full h-full z-[-50] pointer-events-none">
             {/* 1. Gündüz Rejimi üçün Ağ/Boz Fon */}
