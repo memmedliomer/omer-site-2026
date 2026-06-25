@@ -38,22 +38,17 @@ export default function Achievements() {
     fetchCerts();
   }, []);
 
-  // ŞƏKİLLƏRİ İLDIRIM SÜRƏTİNDƏ AÇMAQ ÜÇÜN OPTİMİZASİYA FUNKSİYASI
   const getOptimizedUrl = (url?: string) => {
     if (!url) return '';
-    // Əgər Cloudinary linkidirsə və hələ optimizasiya olunmayıbsa, ölçünü və çəkini kiçilt
     if (url.includes('cloudinary.com') && !url.includes('q_auto')) {
       return url.replace('/upload/', '/upload/w_800,q_auto,f_auto/');
     }
     return url;
   };
 
-  // 1. Bütün sertifikatları ən yenidən ən köhnəyə doğru sıralayırıq
-  const sortedAllCerts = [...certificates].sort((a, b) => b.id - a.id);
-
-  // 2. Fərdi və Qrup sertifikatlarını ayırırıq
-  const individualCerts = sortedAllCerts.filter(c => !c.category_name);
-  const groupedCerts = sortedAllCerts.reduce((acc: any, cert) => {
+  // 1. Qruplaşdırma
+  const individualCerts = certificates.filter(c => !c.category_name);
+  const groupedCerts = certificates.reduce((acc: any, cert) => {
     if (cert.category_name) {
       if (!acc[cert.category_name]) acc[cert.category_name] = [];
       acc[cert.category_name].push(cert);
@@ -61,7 +56,7 @@ export default function Achievements() {
     return acc;
   }, {});
 
-  // 3. EKRANDA GÖSTƏRİLƏCƏK HƏR ŞEYİ BİRLƏŞDİRİB VAXTA GÖRƏ SIRALAYIRIQ
+  // 2. QARIŞIQ VƏ ƏDALƏTLİ SIRALAMA SİSTEMİ
   const displayItems: any[] = [];
 
   // Fərdiləri əlavə edirik
@@ -69,14 +64,15 @@ export default function Achievements() {
     displayItems.push({ type: 'individual', sortId: cert.id, data: cert });
   });
 
-  // Qovluqları əlavə edirik (Qovluğun sırası içindəki ən yeni sertifikata görə təyin edilir)
+  // Qovluqları əlavə edirik
   Object.keys(groupedCerts).forEach(groupName => {
     const certs = groupedCerts[groupName];
-    const maxId = Math.max(...certs.map((c: any) => c.id));
-    displayItems.push({ type: 'folder', sortId: maxId, name: groupName, certs });
+    // ZİREHLİ MƏNTİQ: Qovluğun sırasını içinə əlavə edilən İLK (id-si ən kiçik) sertifikat təyin edir
+    const firstCertId = Math.min(...certs.map((c: any) => c.id));
+    displayItems.push({ type: 'folder', sortId: firstCertId, name: groupName, certs });
   });
 
-  // Nəhayət, hər şeyi ən son yüklənən ən üstdə (ən birinci) olmaqla sıralayırıq
+  // Ümumi sıralama: Ən son yüklənən (sortId ən böyük olan) ən üstdə olacaq
   displayItems.sort((a, b) => b.sortId - a.sortId);
 
   if (loading) {
@@ -97,30 +93,34 @@ export default function Achievements() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 lg:gap-14">
           
-          {/* BÜTÜN ELEMENTLƏR (Qovluqlar və Fərdilər qarışıq, eyni boyda və yüklənmə sırasıyla) */}
+          {/* SİYAHININ RENDER EDİLMƏSİ */}
           {displayItems.map((item, index) => {
             
             if (item.type === 'folder') {
               const groupName = item.name;
               const certsInGroup = item.certs;
-              const lastCert = certsInGroup[0]; 
+              // Qovluğun qapağı olaraq ən sonuncu əlavə olunanı göstəririk
+              const coverCert = certsInGroup.reduce((prev: any, current: any) => (prev.id > current.id) ? prev : current);
 
               return (
                 <div key={`folder-${index}`} className="group cursor-pointer flex flex-col mx-auto w-full max-w-[320px] sm:max-w-none" onClick={() => setViewGroup(groupName)}>
                   <div className="relative h-64 sm:h-72 lg:h-80 w-full">
+                     {/* 3D Dərinlik */}
                      <div className="absolute top-3 left-3 md:top-4 md:left-4 w-full h-full bg-slate-800/80 rounded-xl md:rounded-2xl rotate-3 z-0 border border-white/5 transition-colors"></div>
                      <div className="absolute top-1.5 left-1.5 md:top-2 md:left-2 w-full h-full bg-slate-900/80 rounded-xl md:rounded-2xl -rotate-2 z-10 border border-white/10 transition-colors"></div>
                      
-                     <div className="relative z-20 w-full h-full p-[3px] md:p-[4px] liquid-led led-gold rounded-xl md:rounded-2xl shadow-2xl transition-transform duration-500 group-hover:scale-[1.03] cursor-pointer">
-                        <div className="w-full h-full bg-[#050b14] rounded-[10px] md:rounded-[14px] overflow-hidden relative flex items-center justify-center p-3">
+                     {/* QOVLUQ DİZAYNI: Qızılı çərçivə (led-gold) SİLİNDİ, sadə şüşəvi çərçivə verildi */}
+                     <div className="relative z-20 w-full h-full p-[3px] md:p-[4px] bg-[#050b14]/60 border border-white/10 rounded-xl md:rounded-2xl shadow-2xl transition-transform duration-500 group-hover:scale-[1.03] cursor-pointer backdrop-blur-sm">
+                        <div className="w-full h-full rounded-[10px] md:rounded-[14px] overflow-hidden relative flex items-center justify-center p-0">
+                          {/* Qovluq şəkli əvvəlki kimi object-cover və grayscale olacaq */}
                           <img 
-                            src={getOptimizedUrl(lastCert?.image)} 
+                            src={getOptimizedUrl(coverCert?.image)} 
                             loading="lazy"
                             decoding="async"
-                            className="w-full h-full object-contain opacity-60 group-hover:opacity-80 transition-opacity duration-500 grayscale group-hover:grayscale-0 bg-black/20 rounded-lg" 
+                            className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500 grayscale group-hover:grayscale-0" 
                             alt="Folder Cover" 
                           />
-                          <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500 rounded-[10px] md:rounded-[14px]"></div>
+                          <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500"></div>
                           <div className="absolute inset-0 flex items-center justify-center">
                             <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-black/60 border border-white/10 backdrop-blur-md flex items-center justify-center text-white font-black text-lg md:text-xl shadow-[0_0_20px_rgba(0,0,0,0.8)]">
                               +{certsInGroup.length}
@@ -141,6 +141,7 @@ export default function Achievements() {
               return (
                 <div key={`cert-${cert.id}`} className="cursor-pointer flex flex-col mx-auto w-full max-w-[320px] sm:max-w-none" onClick={() => setViewCert(cert)}>
                   <Tilt tiltMaxAngleX={12} tiltMaxAngleY={12} className="h-64 sm:h-72 lg:h-80 w-full">
+                    {/* FƏRDİ SERTİFİKAT DİZAYNI: İşıqlı çərçivə və tam qorunan sənəd forması */}
                     <div className={`relative w-full h-full p-[3px] md:p-[4px] liquid-led led-${cert.rank} rounded-xl md:rounded-2xl shadow-xl transition-all duration-300 hover:shadow-cyan-500/20`}>
                       <div className="w-full h-full bg-[#0d1527] rounded-[10px] md:rounded-[14px] overflow-hidden relative group flex items-center justify-center p-3 md:p-4">
                         <img 
@@ -206,7 +207,7 @@ export default function Achievements() {
         )}
       </AnimatePresence>
 
-      {/* MODAL 2: İri Şəkil Görünüşü (Böyüdəndə Orijinal Keyfiyyət) */}
+      {/* MODAL 2: İri Şəkil Görünüşü */}
       <AnimatePresence>
         {viewCert && (
           <motion.div 
@@ -219,7 +220,7 @@ export default function Achievements() {
             </button>
             <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="relative max-w-5xl w-full z-10 flex justify-center">
               <img 
-                src={viewCert.image} // İri ekranda şəklin xırtaxırt, ən təmiz versiyası açılır
+                src={viewCert.image} 
                 className="max-w-full max-h-[85vh] object-contain bg-[#050b14] rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-white/10" 
                 alt={viewCert.title} 
               />
