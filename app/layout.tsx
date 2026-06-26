@@ -1,84 +1,54 @@
-"use client";
+import type { Metadata } from "next";
+import { Montserrat } from "next/font/google";
+import "./globals.css";
+import Navbar from "./components/Navbar";
+import { Providers } from "./components/Providers";
+import VisitorTracker from "./components/VisitorTracker";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { useLang } from './Providers';
-import { useState, useEffect } from 'react';
-import { Home, Award, Layers, Mail, Globe } from 'lucide-react';
+const montserrat = Montserrat({ 
+  subsets: ["latin", "latin-ext"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: 'swap',
+});
 
-export default function Navbar() {
-  const pathname = usePathname();
-  const { lang, setLang, t } = useLang();
-  const [mounted, setMounted] = useState(false);
+export const metadata: Metadata = {
+  title: "Ömər Məmmədli | Portfolio",
+  description: "FPV Dron Yarışçısı və Gənc Mühəndis Ömər Məmmədlinin 3D Portfoliosu",
+};
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const navItems = [
-    { name: t('home'), path: '/', icon: <Home className="w-4 h-4 sm:w-[18px] sm:h-[18px]" /> },
-    { name: t('ach'), path: '/achievements', icon: <Award className="w-4 h-4 sm:w-[18px] sm:h-[18px]" /> },
-    { name: t('pro'), path: '/projects', icon: <Layers className="w-4 h-4 sm:w-[18px] sm:h-[18px]" /> },
-    { name: t('con'), path: '/contact', icon: <Mail className="w-4 h-4 sm:w-[18px] sm:h-[18px]" /> },
-  ];
-
-  if (!mounted) {
-    return (
-      <nav className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 bg-white/10 border border-white/20 backdrop-blur-xl px-5 py-2.5 rounded-full shadow-2xl opacity-50 w-max max-w-[95vw]">
-        <div className="w-40 h-6 bg-slate-700/20 rounded"></div>
-      </nav>
-    );
-  }
-
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <nav className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-1.5 sm:gap-3 bg-white/10 dark:bg-black/40 border border-slate-200/50 dark:border-white/20 backdrop-blur-xl px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-full shadow-2xl transition-colors duration-300 w-max max-w-[95vw]">
-      
-      {/* ƏSAS MENYU İKONLARI */}
-      <div className="flex items-center gap-1 sm:gap-2 border-r border-slate-300 dark:border-white/10 pr-2 sm:pr-3">
-        {navItems.map((item) => {
-          const isActive = pathname === item.path;
-          return (
-            <Link 
-              key={item.path} 
-              href={item.path}
-              // Lighthouse və Agentic Browsing (100) üçün aria-label mütləqdir
-              aria-label={item.name} 
-              className={`relative flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full transition-all duration-300 font-bold text-xs sm:text-sm ${
-                isActive 
-                  ? 'text-blue-600 dark:text-cyan-400' 
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              {item.icon}
-              {/* Ekran oxuyucular və AI üçün gizli, amma vizual olaraq yalnız masaüstündə görünən mətn */}
-              <span className="hidden sm:inline">{item.name}</span>
-              {/* Cihazlar və botlar mətni hər vaxt görsün deyə (sr-only - yalnız screen reader-lər üçün) */}
-              <span className="sr-only sm:hidden">{item.name}</span>
-              
-              {isActive && (
-                <motion.div 
-                  layoutId="navGlow" 
-                  className="absolute inset-0 bg-blue-500/10 dark:bg-cyan-500/10 border border-blue-500/30 dark:border-cyan-500/30 rounded-full -z-10" 
-                />
-              )}
-            </Link>
-          );
-        })}
-      </div>
+    <html lang="az" suppressHydrationWarning>
+      <body className={`${montserrat.className} text-slate-900 dark:text-white transition-colors duration-300 min-h-screen relative`}>
+        <Providers>
+          <VisitorTracker />
+          
+          {/* --- MÜTLƏQ ARXA FON QATI --- */}
+          <div className="fixed inset-0 w-full h-full z-[-50] pointer-events-none">
+            {/* 1. Gündüz Rejimi üçün Ağ/Boz Fon */}
+            <div className="absolute inset-0 bg-slate-50 dark:bg-transparent transition-colors duration-500"></div>
+            
+            {/* 2. Qaranlıq Rejim üçün Galaxy Şəkli */}
+            <div 
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-0 dark:opacity-100 transition-opacity duration-1000"
+              style={{ backgroundImage: "url('/galaxy.webp')" }}
+            ></div>
+            
+            {/* 3. Şəklin Parlaqlığını Azaldan Tünd Pərdə */}
+            <div className="absolute inset-0 bg-transparent dark:bg-[#050b14]/75 transition-colors duration-700"></div>
+          </div>
 
-      {/* DİL DƏYİŞDİRMƏ DÜYMƏSİ */}
-      <div className="flex items-center gap-2 pl-1 sm:pl-0">
-        <button 
-          onClick={() => setLang(lang === 'AZ' ? 'EN' : 'AZ')} 
-          aria-label={lang === 'AZ' ? "Switch to English" : "Azərbaycan dilinə keç"}
-          className="flex items-center gap-1.5 text-[10px] sm:text-xs font-black text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 px-2 sm:px-3 py-1 sm:py-2 rounded-full hover:bg-white/5 transition-all uppercase"
-        >
-          <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> 
-          <span className="mt-[1px]">{lang}</span>
-        </button>
-      </div>
-      
-    </nav>
+          {/* ÜST QAT (Saytın Özü) */}
+          <div className="relative z-10 flex flex-col min-h-screen">
+            <Navbar />
+            {children}
+          </div>
+        </Providers>
+      </body>
+    </html>
   );
 }
