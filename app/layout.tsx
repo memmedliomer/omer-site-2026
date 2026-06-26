@@ -35,7 +35,7 @@ export default function RootLayout({
             {/* 2. Qaranlıq Rejim üçün Galaxy Şəkli */}
             <div 
               className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-0 dark:opacity-100 transition-opacity duration-1000"
-              style={{ backgroundImage: "url('/galaxy.png')" }}
+              style={{ backgroundImage: "url('/galaxy.webp')" }}
             ></div>
             
             {/* 3. Şəklin Parlaqlığını Azaldan Tünd Pərdə (Yazılar rahat oxunsun deyə) */}
