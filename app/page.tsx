@@ -89,7 +89,7 @@ export default function Home() {
               {/* LCP (Largest Contentful Paint) Xalını 100 etmək üçün fetchpriority="high" əlavə olundu */}
               <img 
                 src={getOptimizedUrl(settings.home_image)} 
-                fetchpriority="high"
+                fetchPriority="high"
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                 alt="Ömər Məmmədli Profil Şəkli" 
               />
