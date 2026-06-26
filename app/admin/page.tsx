@@ -17,7 +17,7 @@ export default function AdminPanel() {
   const [categories, setCategories] = useState<any[]>([]);
   const [certificates, setCertificates] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
-  const [visitors, setVisitors] = useState<any[]>([]); // İZLƏYİCİLƏR ÜÇÜN
+  const [visitors, setVisitors] = useState<any[]>([]); 
   
   const [settingsData, setSettingsData] = useState<any>({});
   const [homeFile, setHomeFile] = useState<File | null>(null);
@@ -28,13 +28,12 @@ export default function AdminPanel() {
   
   const [newCategory, setNewCategory] = useState('');
 
-  // --- SERTİFİKATLAR ---
+  // Sertifikatlar
   const [certTitle, setCertTitle] = useState('');
   const [certFile, setCertFile] = useState<File | null>(null);
   const [certRank, setCertRank] = useState('none');
   const [certCategory, setCertCategory] = useState('none');
   const [uploadingCert, setUploadingCert] = useState(false);
-
   const [editingCertId, setEditingCertId] = useState<number | null>(null);
   const [editCertTitle, setEditCertTitle] = useState('');
   const [editCertFile, setEditCertFile] = useState<File | null>(null);
@@ -42,14 +41,13 @@ export default function AdminPanel() {
   const [editCertCategory, setEditCertCategory] = useState('none');
   const [savingCertEdit, setSavingCertEdit] = useState(false);
 
-  // --- PROYEKTLƏR (ÇOXLU ŞƏKİL İLƏ) ---
+  // Proyektlər
   const [projTitle, setProjTitle] = useState('');
   const [projDesc, setProjDesc] = useState('');
   const [projFeatures, setProjFeatures] = useState(''); 
   const [projTech, setProjTech] = useState('');
   const [projFiles, setProjFiles] = useState<File[]>([]);
   const [uploadingProj, setUploadingProj] = useState(false);
-
   const [editingProjId, setEditingProjId] = useState<number | null>(null);
   const [editProjTitle, setEditProjTitle] = useState('');
   const [editProjDesc, setEditProjDesc] = useState('');
@@ -58,7 +56,7 @@ export default function AdminPanel() {
   const [editProjFiles, setEditProjFiles] = useState<File[]>([]);
   const [savingProjEdit, setSavingProjEdit] = useState(false);
 
-  // --- MESAJLAR ---
+  // Mesajlar
   const [editingMsgId, setEditingMsgId] = useState<number | null>(null);
   const [editMsgContent, setEditMsgContent] = useState('');
 
@@ -73,7 +71,7 @@ export default function AdminPanel() {
       if (activeTab === 'certificates') { fetchCategories(); fetchCertificates(); }
       if (activeTab === 'projects') fetchProjects();
       if (activeTab === 'settings') fetchSettings();
-      if (activeTab === 'visitors') fetchVisitors(); // İZLƏYİCİLƏRİ ÇƏKİRİK
+      if (activeTab === 'visitors') fetchVisitors(); 
     }
   }, [isLoggedIn, activeTab]);
 
@@ -81,13 +79,8 @@ export default function AdminPanel() {
   const fetchCategories = async () => { const res = await fetch('/api/categories'); const data = await res.json(); setCategories(Array.isArray(data) ? data : []); };
   const fetchCertificates = async () => { const res = await fetch('/api/certificates'); const data = await res.json(); setCertificates(Array.isArray(data) ? data : []); };
   const fetchProjects = async () => { const res = await fetch('/api/projects'); const data = await res.json(); setProjects(Array.isArray(data) ? data : []); };
-  const fetchVisitors = async () => { const res = await fetch('/api/visitors' , { cache: 'no-store' }); const data = await res.json(); setVisitors(Array.isArray(data) ? data : []); };
-  const fetchSettings = async () => { 
-    const res = await fetch('/api/settings'); 
-    const data = await res.json(); 
-    setSettingsData(data.error ? {} : data); 
-    setBioText(data.bio || '');
-  };
+  const fetchVisitors = async () => { const res = await fetch('/api/visitors', { cache: 'no-store' }); const data = await res.json(); setVisitors(Array.isArray(data) ? data : []); };
+  const fetchSettings = async () => { const res = await fetch('/api/settings'); const data = await res.json(); setSettingsData(data.error ? {} : data); setBioText(data.bio || ''); };
 
   const uploadToCloudinary = async (file: File, isCv: boolean = false) => {
     const formData = new FormData();
@@ -95,7 +88,6 @@ export default function AdminPanel() {
     formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
     const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`, { method: 'POST', body: formData });
     const data = await res.json();
-    
     const isSpecialTab = activeTab === 'certificates' || activeTab === 'projects';
     if (file.type.startsWith('image/') && !isCv && !isSpecialTab) {
        return data.secure_url.replace('/upload/', '/upload/c_fill,g_auto,w_800,h_800,f_auto,q_auto/');
@@ -103,120 +95,30 @@ export default function AdminPanel() {
     return data.secure_url;
   };
 
-  // --- KATALOQLAR ---
-  const handleCreateCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCategory.trim()) return;
-    await fetch('/api/categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newCategory }) });
-    setNewCategory(''); fetchCategories();
-  };
-  const handleDeleteCategory = async (id: number) => {
-    if(!confirm("Bu kataloqu silmək istədiyinizə əminsiniz? Kataloqun içindəki sertifikatlar fərdi sertifikatlara keçəcək.")) return;
-    await fetch('/api/categories', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-    fetchCategories();
+  const handleDeleteVisitor = async (id: number) => {
+    if(!confirm("Bu kiber-iz qeydini bazadan təmizləmək istəyirsən?")) return;
+    await fetch('/api/visitors', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    fetchVisitors();
   };
 
-  // --- SERTİFİKATLAR FUNKSİYALARI ---
-  const handleCreateCertificate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!certTitle || !certFile) return;
-    setUploadingCert(true);
-    try {
-      const secureImageUrl = await uploadToCloudinary(certFile);
-      await fetch('/api/certificates', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: certTitle, image: secureImageUrl, rank: certRank, category_id: certCategory }) });
-      setCertTitle(''); setCertFile(null); setCertRank('none'); setCertCategory('none'); fetchCertificates();
-    } catch (err) { alert("Xəta baş verdi!"); } finally { setUploadingCert(false); }
-  };
-  const handleDeleteCertificate = async (id: number) => {
-    if(!confirm("Bu sertifikatı silmək istədiyinizə əminsiniz?")) return;
-    await fetch('/api/certificates', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }); fetchCertificates();
-  };
-  const handleSaveCertEdit = async (id: number, oldImage: string) => {
-    setSavingCertEdit(true);
-    try {
-      let finalImage = oldImage;
-      if (editCertFile) finalImage = await uploadToCloudinary(editCertFile);
-      await fetch('/api/certificates', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, title: editCertTitle, image: finalImage, rank: editCertRank, category_id: editCertCategory }) });
-      setEditingCertId(null); fetchCertificates();
-    } catch (err) { alert("Xəta baş verdi!"); } finally { setSavingCertEdit(false); }
-  };
+  const handleCreateCategory = async (e: React.FormEvent) => { e.preventDefault(); if (!newCategory.trim()) return; await fetch('/api/categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newCategory }) }); setNewCategory(''); fetchCategories(); };
+  const handleDeleteCategory = async (id: number) => { if(!confirm("Kataloqu silmək istədiyinizə əminsiniz?")) return; await fetch('/api/categories', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }); fetchCategories(); };
 
-  // --- PROYEKTLƏR FUNKSİYALARI (Çoxlu şəkillə) ---
-  const handleCreateProject = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!projTitle || projFiles.length === 0) return;
-    setUploadingProj(true);
-    try {
-      let secureImageUrls = [];
-      for(let i=0; i<projFiles.length; i++) {
-         const url = await uploadToCloudinary(projFiles[i]);
-         secureImageUrls.push(url);
-      }
-      const finalImageString = secureImageUrls.join(',');
+  const handleCreateCertificate = async (e: React.FormEvent) => { e.preventDefault(); if (!certTitle || !certFile) return; setUploadingCert(true); try { const secureImageUrl = await uploadToCloudinary(certFile); await fetch('/api/certificates', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: certTitle, image: secureImageUrl, rank: certRank, category_id: certCategory }) }); setCertTitle(''); setCertFile(null); setCertRank('none'); setCertCategory('none'); fetchCertificates(); } catch (err) { alert("Xəta baş verdi!"); } finally { setUploadingCert(false); } };
+  const handleDeleteCertificate = async (id: number) => { if(!confirm("Sertifikatı silmək istədiyinizə əminsiniz?")) return; await fetch('/api/certificates', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }); fetchCertificates(); };
+  const handleSaveCertEdit = async (id: number, oldImage: string) => { setSavingCertEdit(true); try { let finalImage = oldImage; if (editCertFile) finalImage = await uploadToCloudinary(editCertFile); await fetch('/api/certificates', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, title: editCertTitle, image: finalImage, rank: editCertRank, category_id: editCertCategory }) }); setEditingCertId(null); fetchCertificates(); } catch (err) { alert("Xəta baş verdi!"); } finally { setSavingCertEdit(false); } };
 
-      await fetch('/api/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: projTitle, description: projDesc, image: finalImageString, speed: projFeatures, weight: '', tech_stack: projTech }) });
-      setProjTitle(''); setProjDesc(''); setProjFeatures(''); setProjTech(''); setProjFiles([]); fetchProjects();
-    } catch (err) { alert("Xəta baş verdi!"); } finally { setUploadingProj(false); }
-  };
+  const handleCreateProject = async (e: React.FormEvent) => { e.preventDefault(); if (!projTitle || projFiles.length === 0) return; setUploadingProj(true); try { let secureImageUrls = []; for(let i=0; i<projFiles.length; i++) { const url = await uploadToCloudinary(projFiles[i]); secureImageUrls.push(url); } const finalImageString = secureImageUrls.join(','); await fetch('/api/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: projTitle, description: projDesc, image: finalImageString, speed: projFeatures, weight: '', tech_stack: projTech }) }); setProjTitle(''); setProjDesc(''); setProjFeatures(''); setProjTech(''); setProjFiles([]); fetchProjects(); } catch (err) { alert("Xəta baş verdi!"); } finally { setUploadingProj(false); } };
+  const handleDeleteProject = async (id: number) => { if(!confirm("Proyekti silmək istədiyinizə əminsiniz?")) return; await fetch('/api/projects', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }); fetchProjects(); };
+  const handleSaveProjEdit = async (id: number, oldImage: string) => { setSavingProjEdit(true); try { let finalImageString = oldImage; if (editProjFiles.length > 0) { let secureImageUrls = []; for(let i=0; i<editProjFiles.length; i++) { const url = await uploadToCloudinary(editProjFiles[i]); secureImageUrls.push(url); } finalImageString = secureImageUrls.join(','); } await fetch('/api/projects', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, title: editProjTitle, description: editProjDesc, image: finalImageString, speed: editProjFeatures, tech_stack: editProjTech }) }); setEditingProjId(null); setEditProjFiles([]); fetchProjects(); } catch (err) { alert("Xəta baş verdi!"); } finally { setSavingProjEdit(false); } };
 
-  const handleDeleteProject = async (id: number) => {
-    if(!confirm("Bu proyekti silmək istədiyinizə əminsiniz?")) return;
-    await fetch('/api/projects', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }); fetchProjects();
-  };
+  const handleSaveSettings = async (e: React.FormEvent) => { e.preventDefault(); setUploadingSettings(true); try { let hImg = settingsData.home_image, cImg = settingsData.contact_image, cvL = settingsData.cv_link; if (homeFile) hImg = await uploadToCloudinary(homeFile); if (contactFile) cImg = await uploadToCloudinary(contactFile); if (cvFile) cvL = await uploadToCloudinary(cvFile, true); await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ home_image: hImg, contact_image: cImg, bio: bioText, cv_link: cvL }) }); alert("Ayarlar yeniləndi!"); fetchSettings(); setHomeFile(null); setContactFile(null); setCvFile(null); } catch (err) { alert("Xəta baş verdi!"); } finally { setUploadingSettings(false); } };
+  const handleDeleteMessage = async (id: number) => { if(!confirm("Mesajı silmək istədiyinizə əminsiniz?")) return; await fetch('/api/messages', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }); fetchMessages(); };
+  const handleSaveMsgEdit = async (id: number) => { await fetch('/api/messages', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, message: editMsgContent }) }); setEditingMsgId(null); fetchMessages(); };
 
-  const handleSaveProjEdit = async (id: number, oldImage: string) => {
-    setSavingProjEdit(true);
-    try {
-      let finalImageString = oldImage;
-      if (editProjFiles.length > 0) {
-        let secureImageUrls = [];
-        for(let i=0; i<editProjFiles.length; i++) {
-           const url = await uploadToCloudinary(editProjFiles[i]);
-           secureImageUrls.push(url);
-        }
-        finalImageString = secureImageUrls.join(',');
-      }
-      await fetch('/api/projects', { 
-        method: 'PUT', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ id, title: editProjTitle, description: editProjDesc, image: finalImageString, speed: editProjFeatures, tech_stack: editProjTech }) 
-      });
-      setEditingProjId(null); setEditProjFiles([]); fetchProjects();
-    } catch (err) { alert("Xəta baş verdi!"); } finally { setSavingProjEdit(false); }
-  };
-
-  // --- MESAJLAR VƏ AYARLAR FUNKSİYALARI ---
-  const handleSaveSettings = async (e: React.FormEvent) => {
-    e.preventDefault(); setUploadingSettings(true);
-    try {
-      let hImg = settingsData.home_image, cImg = settingsData.contact_image, cvL = settingsData.cv_link;
-      if (homeFile) hImg = await uploadToCloudinary(homeFile);
-      if (contactFile) cImg = await uploadToCloudinary(contactFile);
-      if (cvFile) cvL = await uploadToCloudinary(cvFile, true);
-      await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ home_image: hImg, contact_image: cImg, bio: bioText, cv_link: cvL }) });
-      alert("Ayarlar uğurla yeniləndi!"); fetchSettings(); setHomeFile(null); setContactFile(null); setCvFile(null);
-    } catch (err) { alert("Xəta baş verdi!"); } finally { setUploadingSettings(false); }
-  };
-  const handleDeleteMessage = async (id: number) => {
-    if(!confirm("Mesajı silmək istədiyinizə əminsiniz?")) return;
-    await fetch('/api/messages', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }); fetchMessages();
-  };
-  const handleSaveMsgEdit = async (id: number) => {
-    await fetch('/api/messages', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, message: editMsgContent }) });
-    setEditingMsgId(null); fetchMessages();
-  };
-
-  // --- LOGİN SİSTEMİ ---
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault(); setLoading(true); setError('');
-    try {
-      const res = await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) }); const data = await res.json();
-      if (data.success) { sessionStorage.setItem('adminAuth', 'true'); setIsLoggedIn(true); } else { setError(data.message); }
-    } catch (err) { setError("Bağlantı xətası!"); } finally { setLoading(false); }
-  };
+  const handleLogin = async (e: React.FormEvent) => { e.preventDefault(); setLoading(true); setError(''); try { const res = await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) }); const data = await res.json(); if (data.success) { sessionStorage.setItem('adminAuth', 'true'); setIsLoggedIn(true); } else { setError(data.message); } } catch (err) { setError("Bağlantı xətası!"); } finally { setLoading(false); } };
   const handleLogout = () => { sessionStorage.removeItem('adminAuth'); setIsLoggedIn(false); };
 
-  // --- ANALİTİKA ZAMAN HESABLAYICI ---
   const calculateDuration = (first: string, last: string) => {
     const f = new Date(first).getTime();
     const l = new Date(last).getTime();
@@ -232,10 +134,7 @@ export default function AdminPanel() {
       <main className="min-h-screen bg-[#050b14] flex items-center justify-center p-4 relative z-[200]">
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative z-10 w-full max-w-md bg-black/50 border border-white/10 p-6 sm:p-8 rounded-3xl backdrop-blur-xl">
-          <div className="flex flex-col items-center mb-6 md:mb-8">
-            <div className="w-14 h-14 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-full flex items-center justify-center mb-4"><Shield size={28} className="text-white" /></div>
-            <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-widest">Admin Panel</h1>
-          </div>
+          <div className="flex flex-col items-center mb-6 md:mb-8"><div className="w-14 h-14 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-full flex items-center justify-center mb-4"><Shield size={28} className="text-white" /></div><h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-widest">Admin Panel</h1></div>
           <form onSubmit={handleLogin} className="flex flex-col gap-4 sm:gap-5">
             <div className="relative"><User className="absolute left-4 top-3.5 text-slate-400" size={18} /><input type="text" placeholder="İstifadəçi adı" required value={username} onChange={(e) => setUsername(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-cyan-500 text-sm sm:text-base" /></div>
             <div className="relative"><Lock className="absolute left-4 top-3.5 text-slate-400" size={18} /><input type="password" placeholder="Şifrə" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-cyan-500 text-sm sm:text-base" /></div>
@@ -249,19 +148,14 @@ export default function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-[#050b14] flex flex-col md:flex-row text-white relative z-[200]">
-      
       <div className="md:hidden flex items-center justify-between p-4 bg-black/80 border-b border-white/10 backdrop-blur-xl sticky top-0 z-40">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center"><Shield size={16} className="text-black" /></div>
-          <span className="font-black text-lg tracking-wider uppercase">Admin</span>
-        </div>
+        <div className="flex items-center gap-2"><div className="w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center"><Shield size={16} className="text-black" /></div><span className="font-black text-lg tracking-wider uppercase">Admin</span></div>
         <button onClick={handleLogout} className="p-2 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-colors"><LogOut size={20} /></button>
       </div>
 
       <div className="hidden md:flex w-64 bg-black/50 border-r border-white/10 backdrop-blur-xl p-6 flex-col h-screen sticky top-0 overflow-y-auto z-40">
         <div className="flex items-center gap-3 mb-10"><div className="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center"><Shield size={20} className="text-black" /></div><span className="font-black text-xl tracking-wider uppercase">Admin</span></div>
         <nav className="flex flex-col gap-2 flex-1 text-sm md:text-base">
-          {/* İSTİFADƏÇİLƏR TABI */}
           <button onClick={() => setActiveTab('visitors')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'visitors' ? 'bg-rose-600/20 text-rose-400' : 'hover:bg-white/5 text-slate-400 hover:text-white'}`}><Users size={20} /> İstifadəçilər</button>
           <button onClick={() => setActiveTab('messages')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'messages' ? 'bg-blue-600/20 text-blue-400' : 'hover:bg-white/5 text-slate-400 hover:text-white'}`}><MessageSquare size={20} /> Mesajlar</button>
           <button onClick={() => setActiveTab('folders')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'folders' ? 'bg-cyan-600/20 text-cyan-400' : 'hover:bg-white/5 text-slate-400 hover:text-white'}`}><Folder size={20} /> Kataloqlar</button>
@@ -274,47 +168,69 @@ export default function AdminPanel() {
 
       <div className="flex-1 p-4 sm:p-6 md:p-10 pb-28 md:pb-10 overflow-y-auto w-full">
         
-        {/* İSTİFADƏÇİLƏR (ANALİTİKA) */}
+        {/* İSTİFADƏÇİLƏR TABI (MAX KİBER VERSİYA - 12+ SÜTUN) */}
         {activeTab === 'visitors' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b border-white/10 pb-4 text-rose-400">Canlı Analitika Mərkəzi</h2>
+            <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b border-white/10 pb-4 text-rose-400">Cyber Intelligence Matrix</h2>
             <div className="bg-black/40 border border-white/10 rounded-2xl overflow-hidden shadow-2xl overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-white/5 border-b border-white/10 text-slate-300 uppercase text-xs tracking-wider">
+                <thead className="bg-white/5 border-b border-white/10 text-slate-300 uppercase text-[10px] tracking-widest">
                   <tr>
-                    <th className="px-6 py-4">IP Adres</th>
-                    <th className="px-6 py-4">İnternet Provayder</th>
-                    <th className="px-6 py-4">Sistem (OS)</th>
-                    <th className="px-6 py-4">Cihaz / Model</th>
-                    <th className="px-6 py-4">Brauzer</th>
-                    <th className="px-6 py-4">Ekran Ölçüsü</th>
-                    <th className="px-6 py-4">Giriş Vaxtı</th>
-                    <th className="px-6 py-4">Qalma Müddəti</th>
-                    <th className="px-6 py-4 text-emerald-400">Canlı Aktiv Səhifə</th>
+                    <th className="px-4 py-4">IP / Referrer</th>
+                    <th className="px-4 py-4">Lokasiya / GPS / ISP</th>
+                    <th className="px-4 py-4">Sistem (OS)</th>
+                    <th className="px-4 py-4">Cihaz Model</th>
+                    <th className="px-4 py-4">Brauzer</th>
+                    <th className="px-4 py-4">RAM / Nüvə</th>
+                    <th className="px-4 py-4">GPU (Ekran Kartı)</th>
+                    <th className="px-4 py-4">Ekran / Touch</th>
+                    <th className="px-4 py-4">Saat Qurşağı</th>
+                    <th className="px-4 py-4 text-emerald-400">Vaxt / Səhifə</th>
+                    <th className="px-4 py-4 text-center">İdarə</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 text-slate-400 font-medium">
-                  {visitors.map((v, i) => (
-                    <tr key={i} className="hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-4 font-mono text-rose-300 text-xs">{v.ip ? v.ip.split(',')[0] : 'Gizli'}</td>
-                      <td className="px-6 py-4 text-xs max-w-[180px] truncate" title={v.isp}>{v.isp || 'Yüklənir...'}</td>
-                      <td className="px-6 py-4 text-xs">{v.os}</td>
-                      <td className="px-6 py-4 text-xs text-slate-200">{v.device}</td>
-                      <td className="px-6 py-4 text-xs">{v.browser}</td>
-                      <td className="px-6 py-4 font-mono text-xs">{v.screen || 'Bilinmir'}</td>
-                      <td className="px-6 py-4 text-xs">{new Date(v.first_visit).toLocaleString()}</td>
-                      <td className="px-6 py-4 font-bold text-emerald-400 text-xs">{calculateDuration(v.first_visit, v.last_active)}</td>
-                      <td className="px-6 py-4 font-bold text-cyan-400 font-mono text-xs uppercase">{v.current_page || '/'}</td>
+                <tbody className="divide-y divide-white/5 text-slate-400 font-medium text-xs">
+                  {visitors.map((v) => (
+                    <tr key={v.id} className="hover:bg-white/5 transition-colors group">
+                      <td className="px-4 py-4">
+                        <div className="font-mono text-rose-300 font-bold">{v.ip ? v.ip.split(',')[0] : 'Gizli'}</div>
+                        <div className="text-[9px] text-slate-500 mt-1 max-w-[120px] truncate" title={v.referrer}>Ref: {v.referrer}</div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="max-w-[180px] truncate text-slate-200" title={v.isp}>{v.isp}</div>
+                        <div className="text-[9px] text-cyan-500 mt-1 font-mono">GPS: {v.exact_gps}</div>
+                      </td>
+                      <td className="px-4 py-4">{v.os}</td>
+                      <td className="px-4 py-4 text-slate-100 font-bold">{v.device}</td>
+                      <td className="px-4 py-4">{v.browser}</td>
+                      <td className="px-4 py-4 font-mono text-cyan-300 font-bold">{v.ram} / {v.cpu}</td>
+                      <td className="px-4 py-4 max-w-[150px] truncate text-slate-300 font-mono text-[10px]" title={v.gpu}>{v.gpu}</td>
+                      <td className="px-4 py-4 font-mono">
+                        <div>{v.screen}</div>
+                        <div className="text-[9px] text-slate-500 mt-1">Touch: {v.is_touch}</div>
+                      </td>
+                      <td className="px-4 py-4 text-[10px] text-amber-300 max-w-[100px] truncate">{v.timezone}</td>
+                      <td className="px-4 py-4">
+                        <div className="flex flex-col">
+                          <span className="font-black text-emerald-400 text-sm">{calculateDuration(v.first_visit, v.last_active)}</span>
+                          <span className="font-black text-cyan-400 font-mono text-[9px] uppercase mt-1 tracking-wider bg-cyan-950/40 px-1.5 py-0.5 rounded w-max border border-cyan-800/30">{v.current_page || '/'}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <button onClick={() => handleDeleteVisitor(v.id)} className="p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-all sm:opacity-0 sm:group-hover:opacity-100">
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
                     </tr>
                   ))}
-                  {visitors.length === 0 && <tr><td colSpan={9} className="text-center p-8 text-slate-500">Analitika məlumatı tapılmadı.</td></tr>}
+                  {visitors.length === 0 && <tr><td colSpan={11} className="text-center p-8 text-slate-500 font-bold">Analitika məlumatı yüklənir və ya tapılmadı.</td></tr>}
                 </tbody>
               </table>
             </div>
           </motion.div>
         )}
 
-        {/* MESAJLAR */}
+        {/* MESAJLAR TABI */}
         {activeTab === 'messages' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b border-white/10 pb-4">Gələn Mesajlar</h2>
@@ -347,7 +263,7 @@ export default function AdminPanel() {
           </motion.div>
         )}
 
-        {/* QOVLUQLAR */}
+        {/* QOVLUQLAR TABI */}
         {activeTab === 'folders' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b border-white/10 pb-4">Kataloq İdarəetməsi</h2>
@@ -362,14 +278,14 @@ export default function AdminPanel() {
                     <div className="p-3 bg-cyan-500/20 text-cyan-400 rounded-xl"><Folder size={20} className="sm:w-6 sm:h-6" /></div>
                     <span className="font-bold text-base sm:text-lg">{cat.name}</span>
                   </div>
-                  <button onClick={() => handleDeleteCategory(cat.id)} className="p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-xl sm:opacity-0 sm:group-hover:opacity-100 transition-all"><Trash2 size={16} /></button>
+                  <button onClick={() => handleDeleteCategory(cat.id)} className="p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-xl transition-all sm:opacity-0 sm:group-hover:opacity-100"><Trash2 size={16} /></button>
                 </div>
               ))}
             </div>
           </motion.div>
         )}
 
-        {/* SERTİFİKATLAR */}
+        {/* SERTİFİKATLAR TABI */}
         {activeTab === 'certificates' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b border-white/10 pb-4">Sertifikat İdarəetməsi</h2>
@@ -448,7 +364,7 @@ export default function AdminPanel() {
           </motion.div>
         )}
 
-        {/* PROYEKTLƏR (ÇOXLU ŞƏKİL DƏSTƏYİ VƏ TAM DİZAYN) */}
+        {/* PROYEKTLƏR TABI */}
         {activeTab === 'projects' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b border-white/10 pb-4 text-emerald-400">Proyekt İdarəetməsi</h2>
