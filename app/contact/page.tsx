@@ -94,7 +94,7 @@ export default function Contact() {
         <motion.div initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }} className="lg:w-1/3 flex flex-col items-center justify-center gap-6">
           <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2 md:mb-4 text-center">{lang === 'AZ' ? "Mənimlə Əlaqə" : "Get in Touch"}</h2>
           <div className="flex lg:flex-col gap-4 md:gap-6">
-            <a href="www.linkedin.com/in/mammadliomar" target="_blank" rel="noreferrer" className="group relative flex items-center gap-4">
+            <a href="https://www.linkedin.com/in/%C3%B6m%C9%99r-m%C9%99mm%C9%99dli-21b77729a/" target="_blank" rel="noreferrer" className="group relative flex items-center gap-4">
               <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-slate-200 dark:bg-white/5 border border-slate-300 dark:border-white/10 flex items-center justify-center text-slate-700 dark:text-slate-300 group-hover:bg-[#0077b5] group-hover:text-white group-hover:border-[#0077b5] transition-all shadow-lg"><LinkedinIcon /></div>
             </a>
             <a href="https://github.com/memmedliomer" target="_blank" rel="noreferrer" className="group relative flex items-center gap-4">
