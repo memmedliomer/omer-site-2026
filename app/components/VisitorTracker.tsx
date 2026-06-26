@@ -9,7 +9,7 @@ export default function VisitorTracker() {
     const gatherIntelAndPing = async () => {
       if (typeof window === 'undefined') return;
 
-      // 1. Ekran Kartı (GPU) Analizi - WebGL Fingerprinting Zirehləndi
+      // 1. Ekran Kartı (GPU) Analizi - WebGL Fingerprinting
       let gpu = "Bilinmir";
       try {
         const canvas = document.createElement("canvas");
@@ -23,7 +23,7 @@ export default function VisitorTracker() {
         }
       } catch (e) {}
 
-      // 2. RAM və CPU Nüvə Sayı
+      // 2. RAM, CPU Nüvə Sayı və Toxunmatik Ekran
       const ram = (navigator as any).deviceMemory ? `${(navigator as any).deviceMemory} GB` : "Gizli";
       const cpu = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} Nüvə` : "Bilinmir";
       const isTouch = navigator.maxTouchPoints > 0 ? "Bəli" : "Xeyr";
@@ -57,50 +57,39 @@ export default function VisitorTracker() {
         } catch(e) {}
       }
 
-      // 7. GPS Dəqiq Konum (İcazə verilsə - 10 Metr Dəqiqlik)
-      let exactGPS = "İcazə yoxdur";
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => { 
-            exactGPS = `${position.coords.latitude}, ${position.coords.longitude}`; 
-          },
-          (error) => { 
-            exactGPS = "Bloklandı / Yoxdur"; 
-          },
-          { timeout: 5000, enableHighAccuracy: true }
-        );
-      }
+      // 7. GPS SİLİNDİ - Tam səssiz rejim (Məkan sadəcə IP-dən tapılacaq)
+      const exactGPS = "Səssiz (Yalnız IP)";
 
-      // Məlumat paketini HTTPS üzərindən arxa plana kəşfiyyata göndəririk
-      setTimeout(async () => {
-        try {
-          await fetch('/api/visitors', { 
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json', 
-              'Cache-Control': 'no-cache' 
-            },
-            body: JSON.stringify({
-              screen: `${window.screen.width}x${window.screen.height}`,
-              page: pathname || '/',
-              gpu, 
-              ram, 
-              cpu, 
-              timezone, 
-              referrer, 
-              exactModel, 
-              isTouch, 
-              exactGPS,
-              netType,
-              batteryInfo
-            })
-          });
-        } catch (e) {}
-      }, 1500); // GPS pəncərəsinin açılıb bağlanma reaksiyasını qaçırmamaq üçün kiçik timer
+      // Məlumat paketini HTTPS üzərindən dərhal (gözləmədən) arxa plana göndəririk
+      try {
+        await fetch('/api/visitors', { 
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json', 
+            'Cache-Control': 'no-cache' 
+          },
+          body: JSON.stringify({
+            screen: `${window.screen.width}x${window.screen.height}`,
+            page: pathname || '/',
+            gpu, 
+            ram, 
+            cpu, 
+            timezone, 
+            referrer, 
+            exactModel, 
+            isTouch, 
+            exactGPS,
+            netType,
+            batteryInfo
+          })
+        });
+      } catch (e) {}
     };
     
+    // Gözləmədən dərhal işə sal
     gatherIntelAndPing();
     
+    // Səhifədə qaldığı müddəti yeniləmək üçün 15 saniyədən bir səssiz siqnal atır
     const interval = setInterval(gatherIntelAndPing, 15000);
     return () => clearInterval(interval);
   }, [pathname]);
